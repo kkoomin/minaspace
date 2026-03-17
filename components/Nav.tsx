@@ -3,14 +3,14 @@ import NavLinks from "./NavLinks";
 
 export default function Nav() {
   return (
-    <nav
-      className="sticky top-0 z-10 border-b"
-      style={{
-        background: "var(--color-bg)",
-        borderColor: "var(--color-border)",
-      }}
-    >
-      <div className="mx-auto flex h-[52px] max-w-[640px] items-center justify-between px-6">
+    <nav className="sticky top-0 z-10">
+      <div
+        className="mx-auto flex h-[52px] max-w-[640px] items-center justify-between border-b px-6"
+        style={{
+          borderColor: "var(--color-border)",
+          background: "var(--color-bg)",
+        }}
+      >
         <Link
           href="/"
           className="text-sm font-medium"
