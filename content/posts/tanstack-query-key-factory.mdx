@@ -1,0 +1,72 @@
+---
+title: "TanStack Query Key Factory 패턴 정리"
+date: "2024-12-05"
+tags: ["React", "TanStack Query"]
+description: "쿼리 키를 타입 안전하게 관리하기 위해 Key Factory 패턴을 도입한 과정을 정리했습니다."
+---
+
+TanStack Query를 사용하다 보면 쿼리 키 관리가 점점 복잡해집니다. `['products', 'list', { page: 1 }]` 같은 배열을 여러 파일에 흩어 쓰다 보면 오타나 구조 불일치로 캐시 미스가 생깁니다.
+
+## 문제 상황
+
+```ts
+// 여기서는
+useQuery({ queryKey: ["products", "list", page] });
+
+// 저기서는 (구조가 다름)
+queryClient.invalidateQueries({ queryKey: ["product", "list"] });
+```
+
+`products`와 `product`의 오타 하나로 invalidation이 작동하지 않았습니다.
+
+## Key Factory 패턴
+
+쿼리 키를 한 곳에서 생성하는 팩토리 객체를 만들었습니다.
+
+```ts
+const productKeys = {
+  all: ["products"] as const,
+  lists: () => [...productKeys.all, "list"] as const,
+  list: (filters: ProductFilters) => [...productKeys.lists(), filters] as const,
+  details: () => [...productKeys.all, "detail"] as const,
+  detail: (id: string) => [...productKeys.details(), id] as const,
+};
+```
+
+### 사용 예시
+
+```ts
+// 쿼리
+useQuery({
+  queryKey: productKeys.list({ page: 1, category: "sneakers" }),
+  queryFn: () => fetchProducts({ page: 1, category: "sneakers" }),
+});
+
+// 무효화 — 모든 products 목록 캐시를 한 번에
+queryClient.invalidateQueries({ queryKey: productKeys.lists() });
+
+// 특정 상세 페이지만
+queryClient.invalidateQueries({ queryKey: productKeys.detail(productId) });
+```
+
+## @lukemorales/query-key-factory 라이브러리
+
+반복 작성이 많다면 라이브러리를 써도 됩니다.
+
+```ts
+import { createQueryKeys } from "@lukemorales/query-key-factory";
+
+export const products = createQueryKeys("products", {
+  list: (filters: ProductFilters) => ({ queryKey: [filters] }),
+  detail: (id: string) => ({ queryKey: [id] }),
+});
+
+// 사용
+useQuery(products.list({ page: 1 }));
+```
+
+## 적용 결과
+
+- 쿼리 키 관련 버그 완전히 제거
+- `invalidateQueries` 범위를 코드에서 바로 확인 가능
+- TypeScript 자동완성으로 키 구조 파악 용이

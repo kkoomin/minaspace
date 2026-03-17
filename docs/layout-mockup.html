@@ -1,0 +1,763 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Layout Mockup</title>
+    <style>
+      /*
+    =====================================================================
+    LAYOUT MOCKUP 
+    Claude Code 참고용 레이아웃 목업
+
+    구현 스펙:
+    - Next.js 15 App Router + Tailwind v4 + TypeScript
+    - 전체 컬럼 폭: max-w-[640px] 중앙 정렬
+    =====================================================================
+    */
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        --font-mono: "SFMono-Regular", Consolas, monospace;
+        --color-bg: #ffffff;
+        --color-bg-secondary: #f9f9f8;
+        --color-bg-tertiary: #f3f2ef;
+        --color-text-primary: #1a1a18;
+        --color-text-secondary: #5a5a57;
+        --color-text-tertiary: #9a9a96;
+        --color-border: rgba(0, 0, 0, 0.08);
+        --color-border-strong: rgba(0, 0, 0, 0.14);
+        --radius-md: 8px;
+        --radius-lg: 12px;
+        --col-width: 640px;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --color-bg: #111110;
+          --color-bg-secondary: #1a1a18;
+          --color-bg-tertiary: #222220;
+          --color-text-primary: #e8e8e4;
+          --color-text-secondary: #9a9a96;
+          --color-text-tertiary: #5a5a57;
+          --color-border: rgba(255, 255, 255, 0.08);
+          --color-border-strong: rgba(255, 255, 255, 0.14);
+        }
+      }
+
+      body {
+        font-family: var(--font-sans);
+        background: var(--color-bg-tertiary);
+        color: var(--color-text-primary);
+        line-height: 1.6;
+      }
+
+      /* =====================================================================
+       NAV
+       - 로고(이름) 왼쪽 / Blog · Resume 링크 오른쪽
+       - 전체 폭 / 내부 컨텐츠는 col-width 맞춤
+       ===================================================================== */
+      .nav {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: var(--color-bg);
+        border-bottom: 1px solid var(--color-border);
+      }
+      .nav-inner {
+        max-width: var(--col-width);
+        margin: 0 auto;
+        padding: 0 24px;
+        height: 52px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .nav-logo {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--color-text-primary);
+        text-decoration: none;
+      }
+      .nav-links {
+        display: flex;
+        gap: 20px;
+      }
+      .nav-link {
+        font-size: 13px;
+        color: var(--color-text-secondary);
+        text-decoration: none;
+      }
+      .nav-link:hover,
+      .nav-link.active {
+        color: var(--color-text-primary);
+      }
+      .nav-link.active {
+        font-weight: 500;
+      }
+
+      /* =====================================================================
+       CONTENT WRAPPER
+       - 모든 페이지 공통: max-w-[640px] 중앙 정렬
+       ===================================================================== */
+      .content {
+        max-width: var(--col-width);
+        margin: 0 auto;
+        padding: 48px 24px 80px;
+        background: var(--color-bg);
+        min-height: calc(100vh - 52px);
+      }
+
+      /* =====================================================================
+       PAGE LABEL (섹션 구분용 — 목업 전용)
+       ===================================================================== */
+      .page-label {
+        font-size: 10px;
+        font-weight: 500;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--color-text-tertiary);
+        background: var(--color-bg-secondary);
+        border: 1px solid var(--color-border);
+        border-radius: 4px;
+        padding: 3px 8px;
+        display: inline-block;
+        margin-bottom: 32px;
+      }
+
+      hr.page-divider {
+        border: none;
+        border-top: 2px dashed var(--color-border);
+        margin: 56px 0;
+      }
+
+      /* =====================================================================
+       HOME PAGE — /
+       구조: 인트로 → 태그 필터 → 포스트 목록
+       ===================================================================== */
+
+      /* 인트로 */
+      .intro {
+        margin-bottom: 40px;
+      }
+      .intro-name {
+        font-size: 22px;
+        font-weight: 500;
+        margin-bottom: 8px;
+      }
+      .intro-desc {
+        font-size: 14px;
+        color: var(--color-text-secondary);
+        line-height: 1.65;
+      }
+
+      /* 태그 필터 (fe-developers.kakaoent.com 참고) */
+      .tag-filter {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-bottom: 24px;
+      }
+      .tag {
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--color-text-secondary);
+        background: var(--color-bg-secondary);
+        border: 1px solid var(--color-border);
+        border-radius: 4px;
+        padding: 4px 10px;
+        cursor: pointer;
+        text-decoration: none;
+      }
+      .tag:hover {
+        border-color: var(--color-border-strong);
+        color: var(--color-text-primary);
+      }
+      .tag.active {
+        background: var(--color-text-primary);
+        color: var(--color-bg);
+        border-color: var(--color-text-primary);
+      }
+
+      /* 섹션 타이틀 */
+      .section-title {
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        color: var(--color-text-tertiary);
+        margin-bottom: 2px;
+      }
+
+      /* 포스트 목록 (overreacted.io 참고 — 카드 없이 텍스트 행) */
+      .post-list {
+        margin-top: 4px;
+      }
+      .post-item {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--color-border);
+        text-decoration: none;
+        color: inherit;
+      }
+      .post-item:first-child {
+        border-top: 1px solid var(--color-border);
+      }
+      .post-item:hover .post-title {
+        color: var(--color-text-secondary);
+      }
+      .post-title {
+        font-size: 14px;
+        color: var(--color-text-primary);
+      }
+      .post-date {
+        font-size: 12px;
+        font-family: var(--font-mono);
+        color: var(--color-text-tertiary);
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      /* =====================================================================
+       POST DETAIL — /posts/[slug]
+       구조: 헤더 → 본문 / 우측 sticky TOC
+       ===================================================================== */
+
+      /* 포스트 상세는 컬럼을 조금 더 넓게 잡고 TOC를 우측에 배치 */
+      .post-layout {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 48px 24px 80px;
+        background: var(--color-bg);
+        min-height: calc(100vh - 52px);
+        display: grid;
+        grid-template-columns: 1fr 160px;
+        gap: 48px;
+        align-items: start;
+      }
+
+      /* lg 이하에서 TOC 숨김 — 실제 구현 시 Tailwind hidden lg:block */
+      @media (max-width: 768px) {
+        .post-layout {
+          grid-template-columns: 1fr;
+        }
+        .toc-sidebar {
+          display: none;
+        }
+      }
+
+      .post-header {
+        margin-bottom: 32px;
+      }
+      .post-detail-title {
+        font-size: 24px;
+        font-weight: 500;
+        line-height: 1.35;
+        margin-bottom: 12px;
+      }
+      .post-meta {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        font-size: 12px;
+        font-family: var(--font-mono);
+        color: var(--color-text-tertiary);
+      }
+      .post-meta-tag {
+        font-family: var(--font-sans);
+        font-size: 11px;
+        color: var(--color-text-secondary);
+        background: var(--color-bg-secondary);
+        border: 1px solid var(--color-border);
+        border-radius: 4px;
+        padding: 1px 7px;
+      }
+
+      .prose hr {
+        border: none;
+        border-top: 1px solid var(--color-border);
+        margin: 24px 0;
+      }
+      .prose-placeholder {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .prose-line {
+        height: 13px;
+        background: var(--color-border);
+        border-radius: 3px;
+        opacity: 0.6;
+      }
+
+      /* TOC 사이드바 */
+      .toc-sidebar {
+        position: sticky;
+        top: 68px;
+      }
+      .toc-title {
+        font-size: 10px;
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--color-text-tertiary);
+        margin-bottom: 10px;
+      }
+      .toc-item {
+        display: block;
+        font-size: 12px;
+        color: var(--color-text-tertiary);
+        padding: 4px 0 4px 10px;
+        border-left: 2px solid var(--color-border);
+        line-height: 1.4;
+        text-decoration: none;
+      }
+      .toc-item:hover {
+        color: var(--color-text-secondary);
+      }
+      .toc-item.active {
+        color: var(--color-text-primary);
+        border-left-color: var(--color-text-primary);
+        font-weight: 500;
+      }
+
+      /* =====================================================================
+       RESUME — /resume
+       구조: 헤더(이름/역할/연락처) → Experience → Skills → 학력/기타
+       동일한 640px 컬럼 안에서 블로그와 같은 여백/폰트 시스템 유지
+       ===================================================================== */
+
+      .resume-header {
+        margin-bottom: 36px;
+      }
+      .resume-name {
+        font-size: 22px;
+        font-weight: 500;
+        margin-bottom: 4px;
+      }
+      .resume-role {
+        font-size: 14px;
+        color: var(--color-text-secondary);
+        margin-bottom: 12px;
+      }
+      .resume-contact {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        font-size: 12px;
+        font-family: var(--font-mono);
+        color: var(--color-text-tertiary);
+      }
+      .resume-contact a {
+        color: var(--color-text-tertiary);
+        text-decoration: none;
+      }
+      .resume-contact a:hover {
+        color: var(--color-text-primary);
+      }
+
+      .resume-section {
+        margin-bottom: 32px;
+      }
+      .resume-section-title {
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        color: var(--color-text-tertiary);
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--color-border);
+        margin-bottom: 16px;
+      }
+
+      /* 경력 아이템 */
+      .exp-item {
+        margin-bottom: 20px;
+      }
+      .exp-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+        margin-bottom: 2px;
+      }
+      .exp-company {
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .exp-period {
+        font-size: 12px;
+        font-family: var(--font-mono);
+        color: var(--color-text-tertiary);
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      .exp-role {
+        font-size: 13px;
+        color: var(--color-text-secondary);
+        margin-bottom: 6px;
+      }
+      .exp-bullets {
+        padding-left: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .exp-bullet {
+        font-size: 13px;
+        color: var(--color-text-secondary);
+        line-height: 1.55;
+        list-style: none;
+        position: relative;
+      }
+      .exp-bullet::before {
+        content: "·";
+        position: absolute;
+        left: -10px;
+        color: var(--color-text-tertiary);
+      }
+
+      /* 스킬 태그 */
+      .skill-group {
+        margin-bottom: 10px;
+      }
+      .skill-group-label {
+        font-size: 12px;
+        color: var(--color-text-tertiary);
+        margin-bottom: 6px;
+      }
+      .skill-tags {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .skill-tag {
+        font-size: 12px;
+        color: var(--color-text-secondary);
+        background: var(--color-bg-secondary);
+        border: 1px solid var(--color-border);
+        border-radius: 4px;
+        padding: 3px 9px;
+      }
+
+      /* PDF 출력 버튼 */
+      .print-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: var(--color-text-secondary);
+        background: var(--color-bg-secondary);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        padding: 6px 12px;
+        cursor: pointer;
+        margin-bottom: 32px;
+        font-family: var(--font-sans);
+      }
+      .print-btn:hover {
+        border-color: var(--color-border-strong);
+        color: var(--color-text-primary);
+      }
+
+      /* =====================================================================
+       @media print
+       /resume 페이지에서 Cmd+P → PDF 저장 시 적용
+
+       Tailwind 구현 시:
+       - nav에 print:hidden
+       - .print-btn에 print:hidden
+       - @page는 globals.css에 직접 작성
+       ===================================================================== */
+      @media print {
+        nav,
+        .nav,
+        .tag-filter,
+        .print-btn,
+        .page-label,
+        .toc-sidebar {
+          display: none !important;
+        }
+
+        body {
+          background: white;
+          color: black;
+        }
+
+        .content {
+          max-width: 100%;
+          padding: 0;
+          margin: 0;
+        }
+
+        /* A4 기준 여백 */
+        @page {
+          size: A4;
+          margin: 18mm 16mm;
+        }
+
+        /* 섹션/경력 항목 중간에서 페이지 잘림 방지 */
+        .resume-section,
+        .exp-item {
+          break-inside: avoid;
+        }
+
+        /* 링크 URL 출력 안 되도록 */
+        a::after {
+          content: none !important;
+        }
+
+        /* 섹션 타이틀 구분선 색상 */
+        .resume-section-title {
+          border-bottom-color: #ccc;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ===================================================================
+       NAV — 전 페이지 공통
+       Tailwind 구현:
+       sticky top-0 z-10 bg-white border-b border-border
+       내부: max-w-[640px] mx-auto px-6 h-13 flex items-center justify-between
+       =================================================================== -->
+    <nav class="nav">
+      <div class="nav-inner">
+        <a href="#home" class="nav-logo">minha.dev</a>
+        <div class="nav-links">
+          <a href="#home" class="nav-link active">Blog</a>
+          <a href="#resume" class="nav-link">Resume</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ===================================================================
+       PAGE 1: HOME — /
+       =================================================================== -->
+    <div id="home" class="content">
+      <span class="page-label">Page: / (Home · Blog 목록)</span>
+
+      <!-- 인트로 -->
+      <div class="intro">
+        <div class="intro-name">구민하</div>
+        <div class="intro-desc">
+          프론트엔드 개발자. 이커머스와 어드민 시스템을 주로 만듭니다.<br />
+          Next.js, React, TypeScript를 씁니다.
+        </div>
+      </div>
+
+      <!-- 태그 필터 -->
+      <div class="tag-filter">
+        <a class="tag active">All</a>
+        <a class="tag">Next.js</a>
+        <a class="tag">React</a>
+        <a class="tag">TypeScript</a>
+        <a class="tag">성능</a>
+        <a class="tag">마이그레이션</a>
+        <a class="tag">회고</a>
+      </div>
+
+      <!-- 포스트 목록 -->
+      <div class="section-title">Posts</div>
+      <div class="post-list">
+        <a class="post-item" href="#post-detail">
+          <span class="post-title"
+            >Zustand 스토어를 도메인 단위로 분리한 이유</span
+          >
+          <span class="post-date">2025.03</span>
+        </a>
+        <a class="post-item" href="#post-detail">
+          <span class="post-title">Nuxt → Next.js 마이그레이션 회고</span>
+          <span class="post-date">2025.01</span>
+        </a>
+        <a class="post-item" href="#post-detail">
+          <span class="post-title">TanStack Query Key Factory 패턴 정리</span>
+          <span class="post-date">2024.12</span>
+        </a>
+        <a class="post-item" href="#post-detail">
+          <span class="post-title"
+            >WebP 전환으로 이미지 초기 로딩 개선하기</span
+          >
+          <span class="post-date">2024.11</span>
+        </a>
+        <a class="post-item" href="#post-detail">
+          <span class="post-title">React Hook Form 도입 전후 비교</span>
+          <span class="post-date">2024.09</span>
+        </a>
+      </div>
+    </div>
+
+    <hr class="page-divider" />
+
+    <!-- ===================================================================
+       PAGE 2: POST DETAIL — /posts/[slug]
+       Tailwind 구현:
+       grid grid-cols-[1fr_160px] gap-12 max-w-[860px] mx-auto px-6 py-12
+       TOC: hidden lg:block sticky top-[68px]
+       =================================================================== -->
+    <div id="post-detail" class="post-layout">
+      <!-- 본문 -->
+      <div>
+        <span class="page-label">Page: /posts/[slug] (포스트 상세)</span>
+
+        <div class="post-header">
+          <div class="post-detail-title">
+            Zustand 스토어를 도메인 단위로 분리한 이유
+          </div>
+          <div class="post-meta">
+            <span>2025.03.10</span>
+            <span class="post-meta-tag">Next.js</span>
+            <span class="post-meta-tag">Zustand</span>
+          </div>
+        </div>
+
+        <div class="prose">
+          <hr />
+          <div class="prose-placeholder">
+            <div class="prose-line" style="width: 100%"></div>
+            <div class="prose-line" style="width: 97%"></div>
+            <div class="prose-line" style="width: 88%"></div>
+            <div class="prose-line" style="width: 92%"></div>
+            <div class="prose-line" style="width: 75%"></div>
+            <div class="prose-line" style="width: 100%; margin-top: 8px"></div>
+            <div class="prose-line" style="width: 93%"></div>
+            <div class="prose-line" style="width: 82%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TOC 사이드바 -->
+      <div class="toc-sidebar">
+        <div class="toc-title">목차</div>
+        <a class="toc-item active" href="#">문제 정의</a>
+        <a class="toc-item" href="#">기술 구현</a>
+        <a class="toc-item" href="#">useShallow 적용</a>
+        <a class="toc-item" href="#">Auto Selectors 패턴</a>
+        <a class="toc-item" href="#">결과</a>
+      </div>
+    </div>
+
+    <hr class="page-divider" />
+
+    <!-- ===================================================================
+       PAGE 3: RESUME — /resume
+       print 시: nav 숨김, print-btn 숨김, A4 출력 최적화
+       Tailwind 구현: print:hidden (nav, print-btn)
+       =================================================================== -->
+    <div id="resume" class="content">
+      <span class="page-label">Page: /resume (이력서)</span>
+
+      <!-- PDF 저장 버튼 — print 시 숨김 -->
+      <button class="print-btn" onclick="window.print()">↓ PDF로 저장</button>
+
+      <!-- 이력서 헤더 -->
+      <div class="resume-header">
+        <div class="resume-name">구민하 Minha Koo</div>
+        <div class="resume-role">프론트엔드 개발자</div>
+        <div class="resume-contact">
+          <a href="mailto:minha.koo.9@gmail.com">minha.koo.9@gmail.com</a>
+          <span>+82 10 7139 5028</span>
+          <a href="https://linkedin.com/in/minha-koo" target="_blank"
+            >linkedin</a
+          >
+          <a href="https://github.com/kkoomin" target="_blank">github</a>
+        </div>
+      </div>
+
+      <!-- Experience -->
+      <div class="resume-section">
+        <div class="resume-section-title">Experience</div>
+
+        <div class="exp-item">
+          <div class="exp-top">
+            <span class="exp-company">(주)에스엘디티 · 솔드아웃</span>
+            <span class="exp-period">2023.02 — 2024.05</span>
+          </div>
+          <div class="exp-role">프론트엔드 개발자 · 플랫폼 파트</div>
+          <ul class="exp-bullets">
+            <li class="exp-bullet">
+              판매/결제 페이지 Nuxt → Next.js 마이그레이션
+            </li>
+            <li class="exp-bullet">
+              중고상품 거래 서비스 신규 기능 개발 및 Zustand 스토어 리팩터링
+            </li>
+            <li class="exp-bullet">APP WebView 영역 기능 개발 및 고도화</li>
+          </ul>
+        </div>
+
+        <div class="exp-item">
+          <div class="exp-top">
+            <span class="exp-company">(주)루나소프트</span>
+            <span class="exp-period">2020.09 — 2023.01</span>
+          </div>
+          <div class="exp-role">프론트엔드 개발자 · 솔루션개발팀</div>
+          <ul class="exp-bullets">
+            <li class="exp-bullet">
+              글로벌 상담센터 TF 파트너스센터 어드민 초기 개발
+            </li>
+            <li class="exp-bullet">
+              광고 관리 어드민 Angular → React 마이그레이션
+            </li>
+            <li class="exp-bullet">이커머스 마케팅 솔루션 어드민 리빌딩</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Skills -->
+      <div class="resume-section">
+        <div class="resume-section-title">Skills</div>
+
+        <div class="skill-group">
+          <div class="skill-group-label">Languages & Frameworks</div>
+          <div class="skill-tags">
+            <span class="skill-tag">Next.js</span>
+            <span class="skill-tag">React</span>
+            <span class="skill-tag">TypeScript</span>
+            <span class="skill-tag">Vue.js</span>
+            <span class="skill-tag">Nuxt</span>
+          </div>
+        </div>
+
+        <div class="skill-group" style="margin-top: 10px">
+          <div class="skill-group-label">Libraries & Tools</div>
+          <div class="skill-tags">
+            <span class="skill-tag">TanStack Query</span>
+            <span class="skill-tag">Zustand</span>
+            <span class="skill-tag">React Hook Form</span>
+            <span class="skill-tag">Tailwind CSS</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Education -->
+      <div class="resume-section">
+        <div class="resume-section-title">Education</div>
+        <div class="exp-item">
+          <div class="exp-top">
+            <span class="exp-company">FlatIron School London</span>
+            <span class="exp-period">2019.04 수료</span>
+          </div>
+          <div class="exp-role">Software Engineering Course</div>
+        </div>
+        <div class="exp-item">
+          <div class="exp-top">
+            <span class="exp-company">이화여자대학교</span>
+            <span class="exp-period">2017.08 졸업</span>
+          </div>
+          <div class="exp-role">국어국문학과, 경영학과</div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
