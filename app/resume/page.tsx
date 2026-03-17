@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
-import ResumeActions from "@/components/ResumeActions";
+import ResumeDownLoadButton from "@/components/ResumeDownLoadButton";
 
 export const metadata: Metadata = { title: "Resume" };
 
 export default function ResumePage() {
   return (
     <main
-      className="mx-auto min-h-[calc(100vh-52px)] max-w-[640px] px-6 pb-20 pt-12"
+      className="relative mx-auto min-h-[calc(100vh-52px)] max-w-[640px] px-6 pb-20 pt-12"
       style={{ background: "var(--color-bg)" }}
     >
-      <ResumeActions />
+      <div className="absolute top-6 right-6">
+        <ResumeDownLoadButton />
+      </div>
 
       {/* 헤더 */}
       <div className="mb-9">

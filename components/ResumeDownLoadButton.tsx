@@ -2,10 +2,15 @@
 
 import { Download } from "lucide-react";
 
-export default function ResumeActions() {
+export default function ResumeDownLoadButton() {
   return (
     <button
-      onClick={() => window.print()}
+      onClick={() => {
+        const a = document.createElement("a");
+        a.href = "/files/resume.pdf";
+        a.download = "resume.pdf";
+        a.click();
+      }}
       className="print-hidden mb-8 inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs transition-colors"
       style={{
         borderColor: "var(--color-border)",
@@ -22,7 +27,7 @@ export default function ResumeActions() {
       }}
     >
       <Download size={12} />
-      PDF로 저장
+      Resume PDF
     </button>
   );
 }

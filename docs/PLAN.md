@@ -54,7 +54,7 @@ components/
 ├── HomeFilter.tsx               # ALL + 검색 필터 (클라이언트)
 ├── Pagination.tsx               # 페이지네이션 (서버)
 ├── TableOfContents.tsx          # TOC 사이드바 (클라이언트)
-└── ResumeActions.tsx            # PDF 버튼 (클라이언트)
+└── ResumeDownLoadButton.tsx            # PDF 버튼 (클라이언트)
 
 lib/
 ├── types.ts                     # 공통 타입 정의
@@ -368,7 +368,7 @@ export async function generateMetadata({ params }) {
 구성:
 
 ```
-① ResumeActions (클라이언트)
+① ResumeDownLoadButton (클라이언트)
    <button onClick={() => window.print()}>↓ PDF로 저장</button>
    — text-xs border border-[--color-border] rounded-lg px-3 py-1.5 mb-8 print:hidden
 
@@ -424,7 +424,7 @@ description: "..."
 7. 홈 페이지 (/)     → HomeFilter (클라이언트)
 8. 블로그 목록 (/blog)
 9. 포스트 상세       → MDX + TOC
-10. 이력서 (/resume) → ResumeActions (클라이언트)
+10. 이력서 (/resume) → ResumeDownLoadButton (클라이언트)
 11. 샘플 MDX 파일    → 콘텐츠 검증
 ```
 
