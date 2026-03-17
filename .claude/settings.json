@@ -1,8 +1,24 @@
 {
   "permissions": {
-    "deny": ["READ(.env)"]
+    "deny": ["READ(.env)"],
+    "allow": [
+      "mcp__next-devtools__init",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm build:*)"
+    ]
   },
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/slack-notify.sh"
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Write|Edit",
@@ -13,6 +29,18 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/slack-done.sh"
+          }
+        ]
+      }
     ]
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": ["context7"]
 }
