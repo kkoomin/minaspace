@@ -22,7 +22,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
 
   return (
     <main
-      className="mx-auto min-h-[calc(100vh-52px)] max-w-[640px] px-6 pb-20 pt-12"
+      className="mx-auto min-h-[calc(100vh-52px)] max-w-[640px] px-6 py-12 lg:max-w-[860px]"
       style={{ background: "var(--color-bg)" }}
     >
       <h1

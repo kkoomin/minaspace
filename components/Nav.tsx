@@ -5,7 +5,7 @@ export default function Nav() {
   return (
     <nav className="sticky top-0 z-10">
       <div
-        className="mx-auto flex h-[52px] max-w-[640px] items-center justify-between border-b px-6"
+        className="mx-auto flex h-[52px] max-w-[640px] items-center justify-between border-b px-6 lg:max-w-[860px]"
         style={{
           borderColor: "var(--color-border)",
           background: "var(--color-bg)",

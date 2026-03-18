@@ -44,12 +44,12 @@ export default async function PostPage({ params }: PostPageProps) {
 
   return (
     <div
-      className="mx-auto min-h-[calc(100vh-52px)] max-w-[860px] px-6 py-12"
+      className="mx-auto min-h-[calc(100vh-52px)] max-w-[640px] px-6 py-12 lg:max-w-[860px]"
       style={{ background: "var(--color-bg)" }}
     >
-      <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-[1fr_160px]">
+      <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_160px]">
         {/* 메인 컬럼 */}
-        <div>
+        <div className="lg:order-first">
           <Link
             href="/blog"
             className="mb-8 inline-flex items-center gap-1.5 text-sm no-underline transition-opacity hover:opacity-70"

@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Resume" };
 export default function ResumePage() {
   return (
     <main
-      className="relative mx-auto min-h-[calc(100vh-52px)] max-w-[640px] px-6 pb-20 pt-12"
+      className="relative mx-auto min-h-[calc(100vh-52px)] max-w-[640px] px-6 py-12 lg:max-w-[860px]"
       style={{ background: "var(--color-bg)" }}
     >
       <div className="absolute top-6 right-6">
