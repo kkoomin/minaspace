@@ -43,7 +43,7 @@ export default function TableOfContents() {
   if (headings.length === 0) return null;
 
   return (
-    <div className="hidden lg:block sticky top-[68px]">
+    <div className="hidden lg:block sticky top-[68px] w-full min-w-0 overflow-hidden">
       <p
         className="mb-2.5 text-[10px] font-medium uppercase tracking-[0.08em]"
         style={{ color: "var(--color-text-tertiary)" }}

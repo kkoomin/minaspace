@@ -49,7 +49,7 @@ export default async function PostPage({ params }: PostPageProps) {
     >
       <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_160px]">
         {/* 메인 컬럼 */}
-        <div className="lg:order-first">
+        <div className="min-w-0 lg:order-first">
           <Link
             href="/blog"
             className="mb-8 inline-flex items-center gap-1.5 text-sm no-underline transition-opacity hover:opacity-70"
