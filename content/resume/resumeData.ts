@@ -116,9 +116,10 @@ const resumeData: ResumeData = {
       title: "프론트엔드 개발자 · 플랫폼 파트",
       period: "2023.02 — 2024.05",
       achievements: [
-        "판매/결제 페이지 Nuxt → Next.js 마이그레이션",
-        "중고상품 거래 서비스 신규 기능 개발 및 Zustand 스토어 리팩터링",
-        "APP WebView 영역 기능 개발 및 고도화",
+        "무신사 솔드아웃 상품 판매하기, 결제 페이지 마이그레이션 (Nuxt · Vue2 → Next.js)",
+        "중고상품 거래 서비스 신규 기능 개발 및 Zustand 스토어 · 폼 구조 리팩터링",
+        "무신사 솔드아웃 APP 내 WebView 영역 기능 개발 및 고도화",
+        "PC 웹, 백오피스 어드민 페이지의 기능 추가 개발 및 운영",
       ],
     },
     {
@@ -126,9 +127,10 @@ const resumeData: ResumeData = {
       title: "프론트엔드 개발자 · 솔루션개발팀",
       period: "2020.09 — 2023.01",
       achievements: [
-        "글로벌 상담센터 TF 파트너스센터 어드민 초기 개발",
-        "광고 관리 어드민 Angular → React 마이그레이션",
-        "이커머스 마케팅 솔루션 어드민 리빌딩",
+        "글로벌 상담센터 TF 참여, 다국어 기반 파트너스센터 어드민 초기 개발",
+        "광고 관리 어드민 시스템 프론트엔드 신규 설계, 개발 및 운영 유지보수",
+        "이커머스 마케팅 솔루션 어드민 개편, React 기반으로 기능 통합 및 구조 리빌딩",
+        "인스타그램 챗봇 빌더, 스마트 배송조회 서비스 등 기타 서비스 개발 및 유지보수",
       ],
     },
   ],
@@ -145,7 +147,12 @@ const resumeData: ResumeData = {
       graduated: "2017.08 졸업",
     },
   ],
-  certifications: [],
+  certifications: [
+    {
+      title: "정보처리기사",
+      description: "한국산업인력공단 · 2020.12 취득",
+    },
+  ],
   otherExperiences: [],
 };
 

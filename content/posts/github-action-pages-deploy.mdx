@@ -1,0 +1,105 @@
+---
+title: "Github Action과 Github Pages 배포"
+date: "2024-11-19"
+tags: ["Git", "Next.js"]
+description: "Github Action으로 CI/CD 파이프라인을 구성하고 Github Pages에 Next.js 프로젝트를 배포하는 방법을 정리했습니다."
+---
+
+## Github Action
+
+- Github에서 CI/CD 파이프라인을 자동화하는 툴
+  - CI(Continuous Integration: 지속적 통합)
+  - CD(Continuous Deployment: 지속적 배포)
+- 코드 검증, 배포, 테스트, 빌드 등의 workflow를 자동화할 수 있음
+- `.yaml`, `.yml` 형식의 파일을 코드베이스의 `.github/workflows` 폴더에 생성
+
+---
+
+## Github Pages
+
+- Github에서 제공하는 static web hosting 서비스
+- github 레퍼지토리 기반으로 사이트를 생성하고 해당 사이트에 대한 도메인을 제공함
+- 커스텀 도메인 연결 가능
+
+### Github Pages 설정
+
+1. github 레퍼지토리 생성
+   - 레퍼지토리 이름은 `username.github.io`의 형식
+2. HTML, CSS, JS 등의 파일을 추가하여 프로젝트를 생성
+3. Pages 설정
+   - 해당 레퍼지토리의 Setting 탭 > Pages > Build and deployment의 Source
+   - 기본으로 `Deploy from a branch` 설정
+   - NextJS 등의 추가 프로젝트 관련 배포 설정이 필요한 경우 Github Actions를 설정
+
+### NextJS 프로젝트 배포 Github Action 예시
+
+`.github/workflows/main.yaml` 파일 예시:
+
+```yaml
+# workflow의 이름 설정
+name: Deploy Next.js to GitHub Pages
+
+on: # workflow를 실행시킬 이벤트 설정
+  push:
+    branches:
+      - main # ex) main 브랜치에 push될 때 배포 실행
+
+  workflow_dispatch: # 수동으로 workflow 실행 옵션
+  schedule: ... # 특정 시간마다 실행
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest # job을 실행할 환경 설정
+
+    steps:
+      # 저장소 코드 체크아웃
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Node.js 환경 설정
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16 # Node.js 버전 설정
+
+      # (AWS 사용 시,) AWS 배포
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      # 의존성 설치
+      - name: Install dependencies
+        run: npm install
+
+      # 테스트 실행
+      - name: Run tests
+        run: npm test
+
+      # 정적 파일 빌드
+      - name: Build static site
+        run: |
+          npm run build  # Next.js 빌드
+          npm run export # 정적 파일 생성
+
+      # GitHub Pages로 배포
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./out
+```
+
+`next.config.js`에 아래 설정 추가:
+
+```js
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  output: "export",
+};
+
+export default nextConfig;
+```

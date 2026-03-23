@@ -1,0 +1,63 @@
+---
+title: "ReactJS Girls #29 Meetup 후기"
+date: "2024-12-14"
+tags: ["React", "meetup"]
+description: "런던에서 열린 ReactJS Girls #29 Meetup에 참석한 후기. E2E 테스트, 코드 리뷰, Deno 세 가지 세션을 들었습니다."
+---
+
+## ReactJS Girls Meetup
+
+런던의 개발 커뮤니티에서 진행되는 이 모임은 2017년 9월부터 시작되어 꾸준히 운영 중이다. "여성 개발자 모임"을 표방하지만 모든 사람에게 개방되어 있으며, YLD라는 런던 기반 컨설팅 회사가 주최한다. 이번 29회차 행사는 Just Eat Takeaway의 후원으로 진행되었다.
+
+### 세션 일정
+
+1. **"Exploring E2E Testing: Frameworks, demos, and best practices"** — Jane Matiushina (PayProp)
+2. **"How to be a Better React Code Reviewer"** — Emma Mandat-Toland (Just Eat Takeaway.com)
+3. **"Deno-mite! Making your dev experience delightful!"** — Jo Franchetti (Deno)
+
+---
+
+## 세션 1: E2E 테스트 탐색
+
+발표자는 테스팅의 중요성을 설명한 후 Playwright와 Cypress를 비교했다. Cucumber 프레임워크도 소개했는데, "자연어 기반으로 테스트 케이스를 작성할 수 있어서 테스트 과정을 명시적으로 볼 수 있다"는 장점이 있다.
+
+**Q&A 핵심 내용:**
+
+- Playwright와 Cypress 선택은 프로젝트 특성에 따라 결정
+- Playwright와 Cucumber 함께 사용 가능
+
+---
+
+## 세션 2: React 코드 리뷰
+
+Emma는 비전공자 배경을 소개하며 "코드 리뷰는 토론 과정"이라 강조했다. 그녀가 공유한 학습 자료:
+
+- [Google Engineering Practices — What to look for in a code review](https://google.github.io/eng-practices/review/reviewer/looking-for.html)
+- [Google Engineering Practices — The standard of code review](https://google.github.io/eng-practices/review/reviewer/standard.html)
+- [How to review code effectively — GitHub Staff Engineer's philosophy](https://github.blog/developer-skills/github/how-to-review-code-effectively-a-github-staff-engineers-philosophy/)
+- [Best Practices of Code Review](https://medium.com/@shubhadeepchat/best-practices-of-code-review-b4fff998c610)
+
+**코드 리뷰 이슈 분류:**
+
+- **Major Issue:** 성능, 보안, 에러, 상태 관리 등 심각한 문제
+- **Minor Issue:** 사용하지 않는 코드, 혼동스러운 네이밍, 구조 개선
+- **NIT Issues:** 네이밍, 포맷, 주석 처리 등 개인 주관 관련
+
+---
+
+## 세션 3: Deno
+
+Jo는 Deno 개발팀 멤버로서 Node.js 개발자가 만든 이 런타임을 소개했다. "Rust로 작성되어 매우 빠르며" 많은 도구가 내장되어 있다.
+
+**주요 특징:**
+
+- 매우 빠른 설치 속도
+- VSCode extension 지원
+- Node와의 직접 비교 가능
+
+**Q&A 핵심:**
+
+- 팀 규모: 26명 (오픈소스 기여자 포함)
+- Deno 선택 이유: 속도, 권한 시스템, 건전한 경쟁 환경 조성
+- 채택 저조 이유: Node 발표 10년 후 출시, 학습 시간 부족
+- 사용 사례: IoT 기반 Murder Mystery 파티 구현

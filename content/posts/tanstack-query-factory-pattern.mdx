@@ -1,0 +1,187 @@
+---
+title: "Tanstack Query: Query Factory 패턴"
+date: "2025-04-28"
+tags: ["React", "TanStack Query"]
+description: "실무에서 queryKey를 일관성 있게 관리하기 위한 Query Key Factory 패턴과 Query Factory로의 확장을 정리했습니다."
+---
+
+## 실무에서 발생할 수 있는 Query Key 관련 문제
+
+- API가 늘어나면서 유사하거나 중복된 네이밍의 `queryKey`가 생성될 수 있다.
+- 하드코딩된 `queryKey` 사용 시 휴먼 에러(오타 등)를 발생시킬 수 있다.
+- 페이지나 기능이 늘어나며 코드베이스가 방대해질수록 `queryKey` 관리가 어려워질 수 있다.
+- 유사한 API지만 실무 작업자에 따라 네이밍 규칙이 달라질 수 있다.
+- 특정 `queryKey` 관련 API 네이밍 및 상세 변동 시, 분산된 `queryKey`를 일일히 수정해야 할 수 있다.
+
+---
+
+## Query Key Factory 패턴이란?
+
+Query Key Factory 패턴은 **`queryKey`를 일관성 있게 관리하기 위해 한 곳에서 생성하고 관리하는 패턴**이다. 즉, API별로 query key를 생성하는 "공장(factory)"을 만들어 사용하는 구조다.
+
+Tanstack Query 공식 문서에서는 `queryKey`는 'serializable' 하고 데이터별로 'unique'해야 한다고 설명하며, 대규모 애플리케이션에서의 조직화를 위한 팁으로 [Query Key Factory 패키지](https://github.com/lukemorales/query-key-factory)를 참고하라고 안내한다.
+
+### 장점
+
+- 중복 없는 일관된 `queryKey` 생성 및 규칙 유지 가능
+- IDE 자동완성 & 타입 안정성 증가
+- API 및 도메인 관련 `queryKey` 파악이 용이
+- 프로젝트 규모 확장 시 유지보수성 증가
+
+---
+
+## Query Key Factory 구조 예시
+
+```typescript
+// Key를 모아두는 폴더 하에 도메인 별로 파일을 관리
+// 실무 프로젝트의 폴더 구조에 따라 위치는 달라질 수 있음
+
+// queryKeys/
+//   products.ts
+//   users.ts
+
+// queryKeys/products.ts
+export const productKeys = {
+  all: ["products"] as const,
+
+  list: (filters: { category?: string; sort?: string }) =>
+    [...productKeys.all, "list", filters] as const,
+
+  detail: (id: string) => [...productKeys.all, "detail", id] as const,
+};
+
+// 'products' 도메인 관련임을 명시하고(네임스페이스) 하위 api들을 통합 관리
+// ...productKeys.all: 해당 도메인의 root key를 prefix로 재사용하게 해준다.
+```
+
+```typescript
+const filters = { category: "shoes", sort: "latest" };
+
+useQuery({
+  queryKey: productKeys.list(filters),
+  queryFn: () => getProductList(filters),
+});
+```
+
+이때, `queryKey`는 구조화되어 사용하기 좋아졌지만, 쿼리 호출 시 `queryFn` 및 기타 옵션들과 함께 사용되기 때문에 Query Key Factory와 실제 쿼리를 모두 유지보수해야 하는 문제점이 생긴다.
+
+이에 Tanstack Query 공식 문서에서도 기본 권장 패턴으로 'Query Options'를 언급하고 있다.
+
+```typescript
+// https://tanstack.com/query/latest/docs/framework/react/guides/query-options
+
+import { queryOptions } from "@tanstack/react-query";
+
+function groupOptions(id: number) {
+  return queryOptions({
+    queryKey: ["groups", id],
+    queryFn: () => fetchGroups(id),
+    staleTime: 5 * 1000,
+  });
+}
+
+// usage:
+useQuery(groupOptions(1));
+useSuspenseQuery(groupOptions(5));
+useQueries({
+  queries: [groupOptions(1), groupOptions(2)],
+});
+queryClient.prefetchQuery(groupOptions(23));
+queryClient.setQueryData(groupOptions(42).queryKey, newGroups);
+```
+
+이렇게 `queryOptions`로 `queryKey`, `queryFn`, `staleTime` 등 쿼리의 모든 옵션을 하나의 객체로 묶어 관리하면 재사용이 편리해진다. `prefetchQuery`, `useInfiniteQuery`, `invalidateQueries` 등 다른 쿼리 API에서 동일한 옵션 객체를 일관되게 사용할 수 있고, 쿼리 정의를 컴포넌트 밖으로 분리함으로써 유지보수성을 향상시킬 수 있다.
+
+---
+
+## Query Factory로의 확장
+
+Query Key Factory 구조는 `queryKey`의 일관성을 높여주지만, 실제 사용 시점에는 `queryFn`, `staleTime`, `select` 등 옵션을 함께 정의해야 한다. 이 문제를 보완하고자 'Query Factory' 구조가 등장했다.
+
+다음은 [Query Key Factory Package](https://github.com/lukemorales/query-key-factory)의 예시다.
+
+```typescript
+import { createQueryKeyStore } from "@lukemorales/query-key-factory";
+
+export const queries = createQueryKeyStore({
+  users: {
+    all: null,
+    detail: (userId: string) => ({
+      queryKey: [userId],
+      queryFn: () => api.getUser(userId),
+    }),
+  },
+  todos: {
+    detail: (todoId: string) => [todoId],
+    list: (filters: TodoFilters) => ({
+      queryKey: [{ filters }],
+      queryFn: (ctx) => api.getTodos({ filters, page: ctx.pageParam }),
+      contextQueries: {
+        search: (query: string, limit = 15) => ({
+          queryKey: [query, limit],
+          queryFn: (ctx) =>
+            api.getSearchTodos({
+              page: ctx.pageParam,
+              filters,
+              limit,
+              query,
+            }),
+        }),
+      },
+    }),
+  },
+});
+
+// 컴포넌트에서:
+export function useUsers() {
+  return useQuery({
+    ...queries.users.all,
+    queryFn: () => api.getUsers(),
+  });
+}
+
+export function useUserDetail(id: string) {
+  return useQuery(queries.users.detail(id));
+}
+```
+
+패키지를 사용하지 않더라도 간단히 Query Factory 구조를 실무에서 사용할 수 있다.
+
+```typescript
+// product.queries.ts
+export const productQueries = {
+  all: {
+    queryKey: ["product"] as const,
+  },
+
+  detail: (id: number) => ({
+    queryKey: ["product", "detail", id] as const,
+    queryFn: () => api.product.getDetail(id),
+    staleTime: 60_000,
+  }),
+
+  list: (params: ProductListParams) => ({
+    queryKey: ["product", "list", params] as const,
+    queryFn: () => api.product.getList(params),
+  }),
+};
+
+// 쿼리 호출 시:
+const query = useQuery(productQueries.list({ category: "shoes" }));
+```
+
+### 장점
+
+- `queryKey` + `queryFn` + 옵션을 한 곳에서 관리
+- 컴포넌트에서는 쿼리 호출만 하므로 책임 분리 및 코드 단순화
+- `prefetch`, `invalidate` 등 모든 Query API에서 재사용 가능
+
+---
+
+## 참고문헌
+
+- [Tanstack Query — Query Keys](https://tanstack.com/query/latest/docs/framework/react/guides/query-keys)
+- [Tanstack Query — Query Options](https://tanstack.com/query/latest/docs/framework/react/guides/query-options)
+- [Query Key Factory Package](https://github.com/lukemorales/query-key-factory)
+- [Effective React Query Keys — TkDodo's blog](https://tkdodo.eu/blog/effective-react-query-keys)
+- [Managing Query Keys for Cache Invalidation in React Query](https://www.wisp.blog/blog/managing-query-keys-for-cache-invalidation-in-react-query)

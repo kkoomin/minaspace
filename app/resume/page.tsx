@@ -5,8 +5,16 @@ import resumeData from "@/content/resume/resumeData";
 export const metadata: Metadata = { title: "Resume" };
 
 export default function ResumePage() {
-  const { name, name_en, role, contact, skills, experiences, education } =
-    resumeData;
+  const {
+    name,
+    name_en,
+    role,
+    contact,
+    skills,
+    experiences,
+    education,
+    certifications,
+  } = resumeData;
 
   return (
     <main
@@ -205,6 +213,38 @@ export default function ResumePage() {
             >
               {edu.degree}
             </p>
+          </div>
+        ))}
+      </section>
+
+      {/* Certifications */}
+      <section className="resume-section mb-8">
+        <h2
+          className="resume-section-title mb-4 border-b pb-2 text-[11px] font-medium uppercase tracking-[0.07em]"
+          style={{
+            color: "var(--color-text-tertiary)",
+            borderColor: "var(--color-border)",
+          }}
+        >
+          Certifications
+        </h2>
+
+        {certifications.map((cert) => (
+          <div key={cert.title} className="exp-item mb-5">
+            <div className="flex items-baseline justify-between gap-3 mb-0.5">
+              <span
+                className="text-sm font-medium"
+                style={{ color: "var(--color-text-primary)" }}
+              >
+                {cert.title}
+              </span>
+              <span
+                className="shrink-0 font-mono text-xs"
+                style={{ color: "var(--color-text-tertiary)" }}
+              >
+                {cert.description}
+              </span>
+            </div>
           </div>
         ))}
       </section>

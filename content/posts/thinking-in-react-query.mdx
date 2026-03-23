@@ -1,0 +1,117 @@
+---
+title: "(번역) Thinking in React Query"
+date: "2025-03-06"
+tags: ["React", "TanStack Query"]
+description: "React Query를 올바르게 이해하기 위한 핵심 개념들 — 비동기 상태 관리, staleTime, QueryKey 의존성 관리를 정리했습니다."
+---
+
+## 1. React Query 소개 및 잘못된 인식
+
+React Query는 데이터 불러오기 라이브러리가 아니다. QueryKey를 통해 데이터를 저장하고 Query Function으로 데이터를 가져온다. `useQuery` 훅에서 Promise를 반환하는 어떤 함수든 사용 가능하다.
+
+```jsx
+useQuery({
+  queryKey: ["issues"],
+  queryFn: () => axios.get("/issues").then((response) => response.data),
+});
+```
+
+Axios, GraphQL 등 어떤 데이터 페칭 라이브러리든 상관없다. **QueryFunction이 Promise만 반환하면 된다.**
+
+---
+
+## 2. React Query: 데이터 불러오기와 상태 관리
+
+React Query는 **비동기 상태 관리 매니저**(Async State Manager)다. Client state와 Server state를 구분하여 관리해야 한다.
+
+기존 프론트엔드 개발에서는 모든 상태를 동일하게 처리했으나, "상태는 위치가 아닌 종류로 구분"되어야 한다.
+
+비동기 상태는 snapshot만 알 수 있고 항상 오래된 데이터일 가능성이 있다. Loading, error 같은 상태도 관리해야 한다.
+
+---
+
+## 3. 상태관리와 세분화된 구독
+
+Redux와 Zustand는 selector를 기반으로 한다. React Query도 유사하지만, `queryKey`에 정의된 상태만 구독한다.
+
+```jsx
+function useIssues(select) {
+  return useQuery({
+    queryKey: ["issues"],
+    queryFn: () => axios.get("/issues").then((response) => response.data),
+    select,
+  });
+}
+
+function useIssueCount() {
+  return useIssues((issues) => issues.length);
+}
+```
+
+`select` 옵션으로 데이터를 정제할 수 있다. `length`가 변하지 않으면 리렌더링되지 않는다.
+
+---
+
+## 4. React Query: Fetching과 staleTime
+
+데이터 refetch가 일어나는 상황:
+
+- 윈도우 포커스 진입
+- 컴포넌트 마운트
+- 네트워크 재연결
+- QueryKey 변경
+
+**하지만 query가 stale할 때만 refetch된다.**
+
+`staleTime` = 데이터가 stale하게 되기까지의 시간
+기본값은 0이다 (모든 데이터는 즉시 오래된 것으로 간주).
+
+---
+
+## 5. Stale Time과 의존성 관리
+
+`staleTime`은 데이터 특성에 따라 설정한다:
+
+- 서버 재시작 시에만 변경 → `staleTime: Infinity`
+- 동시 협업 도구 → `staleTime: 0`
+
+**가장 중요한 것: QueryKey 변경 시**
+
+파라미터를 의존성으로 취급해야 한다:
+
+```jsx
+queryKey: ["get-issue-list", page];
+// page가 1과 2일 때 다른 QueryKey로 간주되고 개별 캐싱됨
+```
+
+React Query 팀의 ESLint 플러그인을 사용하여 의존성을 자동으로 검사할 수 있다.
+
+---
+
+## 6. 다른 상태관리 도구와의 연계
+
+`filters` 같은 client state는 Redux나 Zustand로 관리:
+
+```jsx
+function useIssues() {
+  const filters = useStore((state) => state.filters);
+
+  return useQuery({
+    queryKey: ["issues", filters],
+    queryFn: () => {
+      const url = `/issues?filters=${filters}`;
+      return axios.get(url).then((response) => response.data);
+    },
+  });
+}
+```
+
+`filters`는 client state이므로 별도 관리. Server state는 `useQuery`로 관리.
+
+---
+
+## 세 줄 요약
+
+1. React Query는 **비동기 상태관리 매니저**이다
+2. **staleTime**을 필요에 따라 설정해야 한다
+3. **파라미터를 의존성으로 다루고** ESLint 도구를 활용하자

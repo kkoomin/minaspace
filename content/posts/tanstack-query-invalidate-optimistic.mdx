@@ -1,0 +1,205 @@
+---
+title: "Tanstack Query: invalidateQueries와 Optimistic Updates 활용하기"
+date: "2025-08-09"
+tags: ["React", "TanStack Query"]
+description: "데이터 일관성과 빠른 UI 반응을 동시에 만족시키기 위한 invalidateQueries와 Optimistic Updates 개념과 실무 활용 예제를 정리했습니다."
+---
+
+## 1. 실무에서 왜 이 두 개념이 중요할까?
+
+웹서비스는 더 나은 UX를 위해 다음 두 가지를 동시에 만족해야 한다.
+
+- **데이터의 일관성**: 서버 데이터와 UI가 가능한 동일한 상태를 유지해야 한다.
+- **빠른 UI 반응**: 사용자는 입력에 따라 즉시 화면이 바뀌길 원한다.
+
+특히 이커머스 플랫폼 등 사용자의 인터렉션이 다양한 서비스에서는 장바구니 수량 변경, 좋아요, 찜하기 등 사용자의 입력에 따라 빠르게 UI가 변해야 하는 동시에 서버에 데이터를 넘겨야 하는 상황이 많다.
+
+React Query는 이를 위해 다음 두 가지 기능을 제공한다.
+
+- `invalidateQueries`
+- `Optimistic Updates`
+
+---
+
+## 2. invalidateQueries
+
+```javascript
+// 캐시에 있는 모든 쿼리를 invalidate
+queryClient.invalidateQueries();
+// 'todos'로 시작하는 키를 가진 모든 쿼리를 invalidate
+queryClient.invalidateQueries({ queryKey: ["todos"] });
+```
+
+`invalidateQueries()`는 React Query 쿼리를 "stale" 상태로 만드는 API다. 이 상태는 `useQuery`나 관련 훅에서 사용된 `staleTime` 설정을 stale 상태로 덮어씌운다. 만약 쿼리가 실행 중이라면 백그라운드에서 refetch된다. 즉, 강제로 새로운 데이터를 가져오는 조건이 되도록 만드는 것이다.
+
+다음과 같이 invalidate 될 쿼리 키를 상세하게 지정할 수도 있다.
+
+```javascript
+// 📌 특정 쿼리 키만 invalidate 하기
+queryClient.invalidateQueries({
+  queryKey: ["todos", { type: "done" }],
+});
+// ✅ invalidate: useQuery({ queryKey: ['todos', { type: 'done' }] })
+// ❌ not invalidated: useQuery({ queryKey: ['todos'] })
+
+// 📌 정확히 'todos' 라는 쿼리키를 가진 쿼리만 invalidate
+queryClient.invalidateQueries({
+  queryKey: ["todos"],
+  exact: true,
+});
+
+// 📌 조건에 맞는 쿼리키만 invalidate
+queryClient.invalidateQueries({
+  predicate: (query) =>
+    query.queryKey[0] === "todos" && query.queryKey[1]?.version >= 10,
+});
+// ✅ invalidate: useQuery({ queryKey: ['todos', { version: 10 }] })
+// ❌ not invalidated: useQuery({ queryKey: ['todos', { version: 5 }] })
+```
+
+mutate 이후 `invalidateQueries`는 다음과 같이 적용한다.
+
+```javascript
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+const queryClient = useQueryClient();
+
+const mutation = useMutation({
+  mutationFn: addTodo,
+  onSuccess: async () => {
+    // 하나의 쿼리를 invalidate 할 경우
+    await queryClient.invalidateQueries({ queryKey: ["todos"] });
+
+    // 여러 개의 쿼리를 invalidate 할 경우
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["todos"] }),
+      queryClient.invalidateQueries({ queryKey: ["reminders"] }),
+    ]);
+  },
+});
+```
+
+### 실무에서 적용될 만한 상황
+
+- 상품 등록 후 상품 목록 새로고침
+- 댓글 작성 후 댓글 목록의 최신화
+- 좋아요, 찜하기 후 상세 페이지나 목록 데이터 동기화
+
+---
+
+## 3. Optimistic Updates(낙관적 업데이트)
+
+Optimistic Update는 서버 응답을 기다리지 않고 UI를 먼저 변경하는 기법이다. 단, 서버 요청이 실패하는 케이스를 대비하기 위해 기존 상태를 백업해뒀다가 필요하면 롤백하는 구조를 사용한다.
+
+### Optimistic Update 동작 사이클
+
+1. `onMutate`에서 기존 캐시 백업
+2. UI는 즉시 업데이트
+3. 서버 요청
+   - 성공 → UI 유지 또는 `invalidateQueries`로 최신화
+   - 실패 → 백업한 상태로 롤백
+
+```javascript
+// Todo 리스트 예제: 새로운 todo를 등록한 이후 todos 리스트를 업데이트하기
+
+const queryClient = useQueryClient();
+
+useMutation({
+  mutationFn: updateTodo,
+  // mutate가 호출되었을 때:
+  onMutate: async (newTodo, context) => {
+    // 기존 refetch 요청 취소(Optimistic Update를 덮어쓰지 않도록)
+    await context.client.cancelQueries({ queryKey: ["todos"] });
+
+    // 이전 값 스냅샷 저장
+    const previousTodos = context.client.getQueryData(["todos"]);
+
+    // Optimistic Update(낙관적 업데이트)
+    context.client.setQueryData(["todos"], (old) => [...old, newTodo]);
+
+    // 스냅샷 return
+    return { previousTodos };
+  },
+
+  // Mutation 실패 시 onMutate에서 return한 결과로 롤백
+  onError: (err, newTodo, onMutateResult, context) => {
+    context.client.setQueryData(["todos"], onMutateResult.previousTodos);
+  },
+
+  // 성공/실패 상관없이 refetch
+  onSettled: (data, error, variables, onMutateResult, context) =>
+    context.client.invalidateQueries({ queryKey: ["todos"] }),
+});
+```
+
+UI를 직접 업데이트 하는 방식도 있지만, 화면의 여러 곳에서 동시에 변경 내용을 반영해야 한다면 캐시를 조작하여 자동으로 반영되게 하는 것이 더 좋다.
+
+---
+
+## 4. 실무 활용 예제: '좋아요' 기능
+
+이커머스 서비스 내의 '좋아요' 기능은 다음과 같은 특성이 있다.
+
+- 상품 목록과 상품 상세 등에서 동일한 '좋아요' 상태를 보여줘야 한다.
+- 사용자가 '좋아요' 버튼 클릭 시 즉시 반응해야 UX가 좋다.
+- '좋아요'를 클릭하면 아이콘 색깔이 바뀌거나, 좋아요 개수가 변한다.
+- 프론트에서 UI를 먼저 변화시킬 수 있지만, 정확한 개수는 서버 데이터로 결정된다.
+
+이러한 UI와 데이터의 문제는 다음 조합으로 해결할 수 있다.
+
+- `Optimistic Update`로 즉시 반응하는 UI 구현
+- `invalidateQueries`로 서버 데이터와 동기화
+
+```javascript
+const mutation = useMutation(toggleLike, {
+  onMutate: async (productId) => {
+    // 1. 기존 요청 중단
+    await queryClient.cancelQueries(["product", productId]);
+
+    // 2. 이전 상태 백업
+    const previousDetail = queryClient.getQueryData(["product", productId]);
+    const previousList = queryClient.getQueryData(["products", "list"]);
+
+    // 3. 상품 상세 페이지 캐시 Optimistic Update
+    queryClient.setQueryData(["product", productId], (old) => ({
+      ...old,
+      isLiked: true,
+      likeCount: old.likeCount + 1,
+    }));
+
+    // 4. 상품 목록 페이지 캐시 Optimistic Update
+    queryClient.setQueryData(["products", "list"], (old) => {
+      if (!old) return old;
+      return old.map((prod) =>
+        prod.id === productId
+          ? { ...prod, isLiked: true, likeCount: prod.likeCount + 1 }
+          : prod,
+      );
+    });
+
+    return { previousDetail, previousList };
+  },
+
+  // 실패 시 롤백
+  onError: (err, productId, context) => {
+    queryClient.setQueryData(["product", productId], context.previousDetail);
+    queryClient.setQueryData(["products", "list"], context.previousList);
+  },
+
+  // 성공/실패 상관없이 최신 데이터 refetch
+  onSettled: (productId) => {
+    queryClient.invalidateQueries(["product", productId]);
+    queryClient.invalidateQueries(["products", "list"]);
+  },
+});
+```
+
+이와 같이, `invalidateQueries`와 `Optimistic Updates`의 조합을 활용하여 사용자의 UX를 개선할 수 있다.
+
+---
+
+## 참고자료
+
+- [Tanstack Query — Query Invalidation](https://tanstack.com/query/latest/docs/framework/react/guides/query-invalidation)
+- [Tanstack Query — Invalidations from Mutations](https://tanstack.com/query/latest/docs/framework/react/guides/invalidations-from-mutations)
+- [Tanstack Query — Optimistic Updates](https://tanstack.com/query/latest/docs/framework/react/guides/optimistic-updates)
