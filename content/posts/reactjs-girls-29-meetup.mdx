@@ -1,63 +1,93 @@
 ---
 title: "ReactJS Girls #29 Meetup 후기"
 date: "2024-12-14"
-tags: ["React", "meetup"]
+tags: ["React", "meetup", "세미나"]
 description: "런던에서 열린 ReactJS Girls #29 Meetup에 참석한 후기. E2E 테스트, 코드 리뷰, Deno 세 가지 세션을 들었습니다."
 ---
 
-## ReactJS Girls Meetup
+# ReactJS Girls Meetup
 
-런던의 개발 커뮤니티에서 진행되는 이 모임은 2017년 9월부터 시작되어 꾸준히 운영 중이다. "여성 개발자 모임"을 표방하지만 모든 사람에게 개방되어 있으며, YLD라는 런던 기반 컨설팅 회사가 주최한다. 이번 29회차 행사는 Just Eat Takeaway의 후원으로 진행되었다.
+런던에서는 다양한 개발 관련 밋업이 열리는데, 그중 **ReactJS Girls**는 2017년 9월 첫 세션을 시작으로 매년 꾸준히 진행되어 온 밋업이다. 이름에서 알 수 있듯이 여성 개발자 모임을 표방하지만, 사실 누구나 참여할 수 있어 남성 개발자들도 종종 참석하는 모습을 볼 수 있었다.
 
-### 세션 일정
+**ReactJS Girls**는 런던의 프로덕트 디자인 및 개발 컨설팅 회사인 YLD가 주최하며, 매 회차마다 다양한 기업이 후원한다. 내가 참석한 29회차 밋업은 배달 서비스 회사 Just Eat Takeaway의 후원으로 진행되었다.
 
-1. **"Exploring E2E Testing: Frameworks, demos, and best practices"** — Jane Matiushina (PayProp)
-2. **"How to be a Better React Code Reviewer"** — Emma Mandat-Toland (Just Eat Takeaway.com)
-3. **"Deno-mite! Making your dev experience delightful!"** — Jo Franchetti (Deno)
+![Agenda](https://velog.velcdn.com/images/kkoom/post/e3e721e0-a565-4919-9cd0-1dd84fe6ca22/image.png)
 
----
+1. **"Exploring E2E Testing: Frameworks, demos, and best practices"**
+   _Jane Matiushina (Web Developer, PayProp)_
 
-## 세션 1: E2E 테스트 탐색
+2. **"How to be a Better React Code Reviewer"**
+   _Emma Mandat-Toland (Associate Full Stack Engineer, Just Eat Takeaway.com)_
 
-발표자는 테스팅의 중요성을 설명한 후 Playwright와 Cypress를 비교했다. Cucumber 프레임워크도 소개했는데, "자연어 기반으로 테스트 케이스를 작성할 수 있어서 테스트 과정을 명시적으로 볼 수 있다"는 장점이 있다.
+3. **"Deno-mite! Making your dev experience delightful!"**
+   _Jo Franchetti (Developer Advocate, Deno)_
 
-**Q&A 핵심 내용:**
+**E2E 테스트, 코드 리뷰, Deno** 라는 세 가지 주제의 세션이 있었는데, 각 주제가 모두 흥미로워 즐겁게 들을 수 있었다.
 
-- Playwright와 Cypress 선택은 프로젝트 특성에 따라 결정
-- Playwright와 Cucumber 함께 사용 가능
+## Exploring E2E Testing: Frameworks, demos, and best practices
 
----
+### Content
 
-## 세션 2: React 코드 리뷰
+- Testing의 필요성과 중요성에 대해 개념을 간략히 설명하고 Playwright와 Cypress 비교를 중심으로 세션이 진행되었다. Playwright와 Cypress의 장단점과 한계를 언급한 후 간단한 예제 코드를 시연해주었다.
+  ![Playwright and Cypress Comparison](https://velog.velcdn.com/images/kkoom/post/bed32521-5c3b-4d67-951f-ad6d70da4d0a/image.png)
+- 그리고 Cypress와 Cucumber를 함께 사용할 수 있다하며 Cucumber라는 프레임워크에 대해서도 짧게 설명했는데, Gherkin 문법을 사용하고 자연어 기반으로 테스트 케이스를 작성할 수 있어서 테스트 과정을 명시적으로 볼 수 있다는 점이 좋아보였다.
+  ![Cypress and Cucumber Combined](https://velog.velcdn.com/images/kkoom/post/4e5087d7-133f-4002-bbd8-0665b68f1e42/image.png)
 
-Emma는 비전공자 배경을 소개하며 "코드 리뷰는 토론 과정"이라 강조했다. 그녀가 공유한 학습 자료:
+### Q&A
 
-- [Google Engineering Practices — What to look for in a code review](https://google.github.io/eng-practices/review/reviewer/looking-for.html)
-- [Google Engineering Practices — The standard of code review](https://google.github.io/eng-practices/review/reviewer/standard.html)
-- [How to review code effectively — GitHub Staff Engineer's philosophy](https://github.blog/developer-skills/github/how-to-review-code-effectively-a-github-staff-engineers-philosophy/)
-- [Best Practices of Code Review](https://medium.com/@shubhadeepchat/best-practices-of-code-review-b4fff998c610)
+- Playwright와 Cypress 중 어느 것을 선호하는지?
+  - 주로 Cypress를 사용하여 일함. 하지만 Playwright도 커뮤니티가 커져가고 있기 때문에 좋은 옵션이라 생각함. 둘 다 괜찮지만 개발 중인 어플리케이션의 성격이나 니즈에 따라 결정하는 것이 좋을 듯함.
+- Cucumber와 Playwright를 함께 사용할 수 있는지?
+  - 물론이다. Playwright를 지원하는 라이브러리가 따로 있을 것.
 
-**코드 리뷰 이슈 분류:**
+## How to be a Better React Code Reviewer
 
-- **Major Issue:** 성능, 보안, 에러, 상태 관리 등 심각한 문제
-- **Minor Issue:** 사용하지 않는 코드, 혼동스러운 네이밍, 구조 개선
-- **NIT Issues:** 네이밍, 포맷, 주석 처리 등 개인 주관 관련
+### Content
 
----
+- Associate Full Stack Software Engineer at JET. 원래 토론토 출신이고 몬트리올에서 Art History를 전공했다는데 "Not natural born developer" 라고 소개하는게 재밌었다. 코딩 부트캠프를 나와서 개발을 시작했다고. 동질감이 느껴지는 부분이었다.
+- 비전공자로 개발을 시작한만큼 누가 따로 가르쳐주지 않았기에 혼자 코드 리뷰에 관해서도 학습했다고 한다. 코드 리뷰는 discussion 과정에 가깝기 때문에 자신의 의견을 혼자 막 쏟아 붓는 느낌으로 진행하면 안된다고 강조했다.
+- 그래서 코드 리뷰를 어디서 배웠냐- 하면 개발자는 역시 문서를 읽어야 하지 않겠냐며 자신의 멘토가 공유해줬다는 링크를 첨부했다. 나중에 꼼꼼히 읽어볼 예정.
+  - https://google.github.io/eng-practices/review/reviewer/looking-for.html
+  - https://google.github.io/eng-practices/review/reviewer/standard.html
+  - https://github.blog/developer-skills/github/how-to-review-code-effectively-a-github-staff-engineers-philosophy/
+  - https://medium.com/@shubhadeepchat/best-practices-of-code-review-b4fff998c610
+- 코드 리뷰에서 잡아낼 수 있는 이슈를 크게 세 가지로 나누어 설명하고 사람들에게 퀴즈 형식으로 이슈를 찾아낼 수 있도록 예제 코드를 준비해왔다.
+  - Major issue: 코드에 크게 영향을 미치거나 다른 부분에 영향이 갈 정도의 이슈
+    - 성능, 보안 관련 문제, 에러를 발생시키는 코드, 상태 관리 등
+  - Minor issue: 로직이나 기능을 바꾸지 않는 선에서 코드를 개선하는 수준의 이슈들.
+    - 사용하지 않는 코드, 혼동을 줄 수 있는 네이밍, 컴포넌트 구조 등
+  - NIT issues (Insignificant / Nit picking): 개인이나 팀의 주관이 들어가는 이슈. 퀄리티 관련
+    - 변수 네이밍, 따옴표 형태, 코드 포맷, 주석 처리된 코드 처리 등
 
-## 세션 3: Deno
+### Q&A
 
-Jo는 Deno 개발팀 멤버로서 Node.js 개발자가 만든 이 런타임을 소개했다. "Rust로 작성되어 매우 빠르며" 많은 도구가 내장되어 있다.
+- Ternary Operator에 대한 선호도? 오히려 읽기 힘들기도 한 듯하다.
+  - 예시에서는 Ternary를 쓰긴 함. 개인적인 성향인지 좋은 코드인지는 모르겠지만 멘토가 관련해서 언급한다면 코드에 따라서 바꿀 수 있는 부분이라고 본다.
+- Minor Issues에 관해서라면 IDE의 설정 등으로 충분히 수정 가능할 것 같음.
+  - 많은 사람들이 다양한 포맷팅 툴을 사용하고 있고 이정도는 그러한 툴들로 수정 가능한 것이 맞긴하다. 그렇기 때문에 처음에 Lint 사용 등을 언급한 것.
 
-**주요 특징:**
+## Deno-mite! Making your dev experience delightful!
 
-- 매우 빠른 설치 속도
-- VSCode extension 지원
-- Node와의 직접 비교 가능
+### Content
 
-**Q&A 핵심:**
+- https://deno.com/
+- Deno 개발 팀원이 직접 설명해주던 세션. 귀여운 Deno 공룡 스티커도 로비에 비치해두고 자유롭게 가져갈 수 있게 나눠주셨다.
+- Deno에 대해 아는 사람과 production 레벨에서 사용하는 사람이 있는지 물어봤는데 아는 사람은 꽤 있으나 실제로 사용하는 사람은 없었다. 많은 사람들과 얘기해보면 대부분 이런 반응들이라고.
+- Deno는 노드 개발자가 만든 오픈소스 자바스크립트 라이브러리라고 소개하며 세션을 시작함. 노드 개발 10년 후 개발되었으며, Rust로 작성되어 매우 빠르다고. 많은 툴이 built-in으로 들어있다고 한다.
+- Deno가 설치되어 있지 않은 노트북으로 Deno의 설치부터 Documentation과 함께 진행하는 과정을 시연해주었음. 실제로 설치도 굉장히 빨랐다. 설치하는 동안.. 하며 말을 꺼내는 사이 설치가 완료된 상황이었음. VSCode에서 사용할 때는 Deno 관련 extension을 설치해서 쓴다.
+- 일반적인 node를 사용한 프로젝트와 deno로 만들어진 프로젝트를 비교하며 설명해주었다.
 
-- 팀 규모: 26명 (오픈소스 기여자 포함)
-- Deno 선택 이유: 속도, 권한 시스템, 건전한 경쟁 환경 조성
-- 채택 저조 이유: Node 발표 10년 후 출시, 학습 시간 부족
-- 사용 사례: IoT 기반 Murder Mystery 파티 구현
+### Q&A
+
+- Deno의 팀은 얼마나 크고 어디를 베이스로 하고 있는지?
+  - 26명으로 구성되어 있고, 오픈소스인만큼 전세계의 다양한 사람들이 기여해주고 있음. Joe는 only UK employee로 외로웠지만, 최근에 한 명 더 추가되어 함께 즐겁게 일하고 있음.
+- Why Deno?
+  - 많은 이유가 있지만, node보다 빠르고 permission 부분은 매우 흥미롭다고 생각하고. deno를 개인적으로 node보다 좋아하는데, 맘에 안드는 부분이 있으면 바꿀수 있다는 점이 node에서는 할 수 없는 부분이고. node가 독점하고 있는 부분을 만든다는 점이(독점은 좋지 않으므로) 건전한 경쟁 환경을 만든다고 생각함. 그리고 어떤 부분에서는 node보다 더 혁신적으로 개발하고 있기도 함.
+- Deno를 사람들이 많이 쓰지 않는 이유가 뭘까?
+  - deno는 10년이나 늦게 나오기도 했고, 새로운 것을 배울 시간이나 상황이 주어지지 않으면 쉽게 새로운 것을 적용하기 힘들 것.
+- Deno를 사용한 사람들에게서 받은 좋았던 피드백이나 이야기가 있었는지?
+  - 최근에 Murder Mystery 파티를 꾸린 사람의 이야기를 들었는데, 집 전체에 IoT 설치하고 살인 현장 스토리와 관련되어 조명이나 손님들의 핸드폰 연동 등을 진행했는데 이것을 다 Deno로 만들었다는 이야기였음.
+
+##
+
+![denoooo](https://velog.velcdn.com/images/kkoom/post/becf68d5-802c-4081-9204-b1b4744db11f/image.png)
