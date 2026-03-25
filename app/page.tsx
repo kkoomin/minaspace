@@ -20,9 +20,10 @@ export default function HomePage() {
           className="text-sm leading-[1.65]"
           style={{ color: "var(--color-text-secondary)" }}
         >
-          프론트엔드 개발자. 이커머스와 어드민 시스템을 주로 만듭니다.
+          프론트엔드 개발자.
           <br />
-          Next.js, React, TypeScript를 씁니다.
+          기술로 문제를 해결하고 새로운 가치를 만들며, 글로서 생각을 나눠보고자
+          합니다.
         </p>
       </div>
 
