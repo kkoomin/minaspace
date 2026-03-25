@@ -11,7 +11,7 @@
 | 사용 위치                             | 컴포넌트      | 아이콘      |
 | ------------------------------------- | ------------- | ----------- |
 | `app/blog/[slug]/page.tsx`            | 뒤로가기 버튼 | `ArrowLeft` |
-| `components/ResumeDownLoadButton.tsx` | PDF 저장 버튼 | `Download`  |
+| `components/ResumeDownloadButton.tsx` | PDF 저장 버튼 | `Download`  |
 
 ---
 
@@ -359,7 +359,7 @@
 
 ## Step 7. 이력서 페이지
 
-### T17. 이력서 PDF 버튼 — `components/ResumeDownLoadButton.tsx`
+### T17. 이력서 PDF 버튼 — `components/ResumeDownloadButton.tsx`
 
 - [x] `'use client'` 선언
 - [x] `<button onClick={() => downloadResume()}>↓ PDF로 저장</button>`
@@ -375,7 +375,7 @@
 - [x] 서버 컴포넌트 (콘텐츠 하드코딩)
 - [x] `generateMetadata`: `title: 'Resume'`
 - [x] 레이아웃: `max-w-[640px] mx-auto px-6 pt-12 pb-20 bg-[--color-bg] min-h-[calc(100vh-52px)]`
-- [x] `<ResumeDownLoadButton />` 삽입
+- [x] `<ResumeDownloadButton />` 삽입
 - [x] 이력서 헤더
   ```
   이름:     구민하 Minha Koo — text-[22px] font-medium mb-1

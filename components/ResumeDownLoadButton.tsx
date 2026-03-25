@@ -2,13 +2,13 @@
 
 import { Download } from "lucide-react";
 
-export default function ResumeDownLoadButton() {
+export default function ResumeDownloadButton() {
   return (
     <button
       onClick={() => {
         const a = document.createElement("a");
-        a.href = "/files/resume.pdf";
-        a.download = "resume.pdf";
+        a.href = "/files/구민하_프론트엔드_이력서.pdf";
+        a.download = "구민하_프론트엔드_이력서.pdf";
         a.click();
       }}
       className="print-hidden mb-8 inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs transition-colors"

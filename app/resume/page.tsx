@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import ResumeDownLoadButton from "@/components/ResumeDownLoadButton";
+import ResumeDownloadButton from "@/components/ResumeDownloadButton";
 import resumeData from "@/content/resume/resumeData";
 
 export const metadata: Metadata = { title: "Resume" };
@@ -22,7 +22,7 @@ export default function ResumePage() {
       style={{ background: "var(--color-bg)" }}
     >
       <div className="absolute top-6 right-6">
-        <ResumeDownLoadButton />
+        <ResumeDownloadButton />
       </div>
 
       {/* 헤더 */}
