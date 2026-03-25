@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import ResumeDownloadButton from "@/components/ResumeDownloadButton";
+import ResumeDownloadButton from "@/components/ResumeDownLoadButton";
 import resumeData from "@/content/resume/resumeData";
 
 export const metadata: Metadata = { title: "Resume" };
