@@ -1,17 +1,22 @@
 ---
 title: "Zustand 더 알아보기"
 date: "2024-11-15"
-tags: ["React", "Zustand"]
-description: "셀렉터 자동 생성, Actions 분리, Flux 패턴까지 — 실무에서 Zustand를 더 효율적으로 쓰는 방법을 정리했습니다."
+tags: ["React", "zustand"]
+description: "Zustand 스토어를 더 효율적으로 사용하기 위한 Auto Generating Selectors, Actions 분리, Flux 패턴 등 실무 활용 패턴을 소개합니다."
 ---
 
-기본적으로 Zustand는 셀렉터 구조로 state를 가져와 사용한다. 하지만 스토어가 많이 쪼개져 있는 실무 프로젝트 구조에서는, 스토어에서 state와 action을 가져오는 코드가 너무 길어진다. 이를 개선할 수 있는 방법을 정리했다.
+> - 기본적으로 Zustand는 셀렉터 구조로 state를 가져와 사용함
+>   `const bears = useStore((state) => state.bears)`
 
-## 1. Auto Generating Selectors
+- 하지만 스토어가 많이 쪼개져 있는 실무 프로젝트 구조 상에서는, 스토어에서 state와 action을 가져오는 코드가 너무 길어지고 있었음
+- 이를 개선할 수 있는 방법은?
 
-Zustand 공식 문서에서 제안하는 구조로, store에서 import해야 하는 것이 많아질 경우 selector 구조를 반복적으로 작성해야 하는 문제를 개선한다.
+### 1. Selector 구조를 더 단순하게! Auto Generating Selectors
 
-```typescript
+- Zustand 공식 문서에서 제안하는 구조
+- store에서 import해야하는 것이 많아질 경우, selector 구조를 반복적으로 사용해야하는 점을 개선
+
+```tsx
 import { StoreApi, UseBoundStore } from "zustand";
 
 type WithSelectors<S> = S extends { getState: () => infer T }
@@ -31,9 +36,9 @@ const createSelectors = <S extends UseBoundStore<StoreApi<object>>>(
 };
 ```
 
-기존 Zustand에서 사용하는 방식대로 스토어를 `create()`해서 구성하고, 해당 스토어를 `createSelectors`로 묶어서 export한다.
+- 사용 예
 
-```typescript
+```jsx
 export const useOrderStore = createSelectors(
   create<IOrderState>()(
     devtools(
@@ -46,82 +51,102 @@ export const useOrderStore = createSelectors(
         setIsBid: (isBid: boolean) => set({ isBid }),
         setCompleted: (completed: boolean) => set({ completed }),
       }),
-      { name: "useOrderStore" },
+      {
+        name: 'useOrderStore',
+      },
     ),
   ),
-);
+)
+
+// 기존 Zustand에서 사용하는 방식대로 스토어를 create()해서 구성하고,
+// 해당 스토어를 createSelectors로 묶어서 export 해준다.
+
+const isBid = useOrderStore.use.isBid()
+const setIsBid = useOrderStore.use.setIsBid()
+
+// 이런식으로 간단하게 state나 action을 가져다 사용할 수 있음.
 ```
 
-이렇게 하면 컴포넌트에서 아래처럼 간단하게 state나 action을 가져올 수 있다.
+### 2. export 되는 Actions들을 한 번에 묶어서!
 
-```typescript
-const isBid = useOrderStore.use.isBid();
-const setIsBid = useOrderStore.use.setIsBid();
-```
+- Actions는 스토어의 값을 업데이트하는 함수이다.
+- 기존 스토어들은 Zustand의 기본 틀을 따라 create()()안에서 action도 state와 동일하게 세팅되고 그대로 selector로 가져다가 사용함
+- 이를 편리하게 하고자 스토어를 통으로 import하기도 했으나, 현재는 모두 useShallow()로 묶여 있음.
 
-## 2. Actions를 한 번에 묶어서 export
+  ```jsx
+  // ❌ 스토어 사용이 가능은 하지만 모든 state가 변경될 때마다 컴포넌트를 업데이트 할 것임.
+  const store = useOrderProductStore();
+  ```
 
-Actions는 스토어의 값을 업데이트하는 함수다. 기존 방식에서는 여러 action을 꺼낼 때 아래처럼 `useShallow`를 써야 했다.
+- 현재 `useShallow()` 사용 중
 
-```typescript
-// ❌ 모든 state가 변경될 때마다 컴포넌트를 업데이트함
-const store = useOrderProductStore();
+  ```jsx
+  // ✅ 객체 형태로 여러 개의 state를 가져오는 방식
+  const {setName, setThumb, setBrandBgColor} = useOrderProductStore
+    useShallow((state) => {
+      setName: state.setName,
+      setThumb: state.setThumb,
+      setBrandBgColor: state.setBrandBgColor,
+    })
+  )
 
-// ✅ useShallow로 여러 개의 action 가져오기 (객체 형태)
-const { setName, setThumb, setBrandBgColor } = useOrderProductStore(
-  useShallow((state) => ({
-    setName: state.setName,
-    setThumb: state.setThumb,
-    setBrandBgColor: state.setBrandBgColor,
-  })),
-);
-```
+  // ✅ 배열 형태로 여러 개의 state를 가져오는 방식
+  const [setName, setThumb, setBrandBgColor] = useOrderProductStore
+    useShallow((state) => [
+      state.setName,
+      state.setThumb,
+      state.setBrandBgColor,
+    ]),
+  )
+  ```
 
-Actions는 정적이고 변경되지 않기 때문에, 별도의 `actions` 객체로 묶어서 하나의 훅으로 export하는 방법을 쓸 수 있다.
+- Actions 를 묶어서 미리 export 하는 방식
+  - actions는 state와 함께 묶여있기는 하지만, 정적이고 변경되지 않기 때문에 엄밀히 말하면 'state'가 아님.
+  - 따라서 별도의 객체로 묶어서 컴포넌트에서 사용할 하나의 훅으로 export 할 수 있음.
 
-```typescript
+```jsx
+// 스토어 세팅
 const useOrderProductStore = createSelectors(
   create<OrderProductState>()(
     devtools(
-      (set) => ({
-        name: "",
-        thumb: "",
-        brandBgColor: "",
-        size: "",
+      (set, get) => ({
+        name: '',
+        thumb: '',
+        brandBgColor: '',
+        size: '',
         inventoryId: 0,
         productGrade: PRODUCT_GRADE_TRADE_CODE,
 
         actions: {
-          setName: (name: string) => set({ name }),
-          setThumb: (thumb: string) => set({ thumb }),
-          setBrandBgColor: (brandBgColor: string) => set({ brandBgColor }),
-          setSize: (size: string) => set({ size }),
-          setInventoryId: (inventoryId: number) => set({ inventoryId }),
-          setProductGrade: (productGrade) => set({ productGrade }),
+          setName: (name: string) => set((state) => ({ name })),
+          setThumb: (thumb: string) => set((state) => ({ thumb })),
+          setBrandBgColor: (brandBgColor: string) => set((state) => ({ brandBgColor })),
+          setSize: (size: string) => set((state) => ({ size })),
+          setInventoryId: (inventoryId: number) => set((state) => ({ inventoryId })),
+          setProductGrade: (productGrade) => set(() => ({ productGrade })),
         },
       }),
-      { name: "useOrderProductStore" },
+      {
+        name: 'useOrderProductStore',
+      },
     ),
   ),
-);
+)
 
-// ✅ actions selector를 하나의 훅으로 export
-export const useOrderProductStoreActions = () =>
-  useOrderProductStore((state) => state.actions);
-```
+// ✅ 스토어에서 selector를 하나의 훅으로 export
+export const useOrderProductStoreActions = () => useOrderProductStore((state) => state.actions)
 
-컴포넌트에서는 구조분해 할당으로 깔끔하게 사용할 수 있다.
-
-```typescript
+****
+// ✅ 컴포넌트에서 import 하여 사용(구조분해 할당 가능)
 const { setName, setThumb, setBrandBgColor, setSize, setProductGrade } =
-  useOrderProductStoreActions();
+    useOrderProductStoreActions()
 ```
 
-## 3. Flux 패턴 (Redux-like)
+### 3. Flux 패턴을 사용하고 싶은 경우!
 
-Redux와 유사하게 reducer 패턴을 사용하고 싶은 경우, store의 최상단에 `dispatch` 함수를 정의할 수 있다.
+- redux와 유사하게 reducer 패턴을 사용하고 싶은 경우, store의 최상단에 `dispatch` 함수를 정의할 수 있음
 
-```typescript
+```tsx
 const types = { increase: "INCREASE", decrease: "DECREASE" };
 
 const reducer = (state, { type, by = 1 }) => {
@@ -142,11 +167,16 @@ const dispatch = useGrumpyStore((state) => state.dispatch);
 dispatch({ type: types.increase, by: 2 });
 ```
 
-Redux를 쓰던 팀이 Zustand로 마이그레이션할 때 유용한 패턴이다. 다만 Zustand의 단순함을 살리려면 굳이 flux 패턴을 도입하지 않는 쪽이 낫다고 생각한다.
+### Reference
 
-## Reference
+https://tkdodo.eu/blog/working-with-zustand
 
-- [Working with Zustand — TkDodo's blog](https://tkdodo.eu/blog/working-with-zustand)
-- [Practice with no store actions — Zustand docs](https://docs.pmnd.rs/zustand/guides/practice-with-no-store-actions)
-- [Auto Generating Selectors — Zustand docs](https://docs.pmnd.rs/zustand/guides/auto-generating-selectors)
-- [Flux Inspired Practice — Zustand docs](https://docs.pmnd.rs/zustand/guides/flux-inspired-practice#redux-like-patterns)
+https://docs.pmnd.rs/zustand/guides/practice-with-no-store-actions
+
+https://docs.pmnd.rs/zustand/guides/auto-generating-selectors
+
+https://docs.pmnd.rs/zustand/guides/flux-inspired-practice#redux-like-patterns
+
+### 기존 velog 링크
+
+[Zustand 더 알아보기](https://velog.io/@kkoom/Zustand-%EB%8D%94-%EC%95%8C%EC%95%84%EB%B3%B4%EA%B8%B0)

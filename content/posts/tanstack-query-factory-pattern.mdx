@@ -145,7 +145,8 @@ export function useUserDetail(id: string) {
 }
 ```
 
-패키지를 사용하지 않더라도 간단히 Query Factory 구조를 실무에서 사용할 수 있다.
+이처럼 쿼리의 정의와 옵션은 Factory에서 모두 관리하고, 컴포넌트는 쿼리 호출만 할 수 있도록 모듈을 만드는 것이 'Query Factory' 구조이다.  
+해당 패키지를 사용하지 않더라도 간단히 Query Factory 구조를 실무에서 사용할 수 있다.
 
 ```typescript
 // product.queries.ts
@@ -185,3 +186,7 @@ const query = useQuery(productQueries.list({ category: "shoes" }));
 - [Query Key Factory Package](https://github.com/lukemorales/query-key-factory)
 - [Effective React Query Keys — TkDodo's blog](https://tkdodo.eu/blog/effective-react-query-keys)
 - [Managing Query Keys for Cache Invalidation in React Query](https://www.wisp.blog/blog/managing-query-keys-for-cache-invalidation-in-react-query)
+
+### 기존 velog 링크
+
+[Tanstack Query: Query Factory 패턴](https://velog.io/@kkoom/Tanstack-Query-Query-Factory-%ED%8C%A8%ED%84%B4-s5wt61f2)

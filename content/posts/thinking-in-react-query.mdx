@@ -1,117 +1,172 @@
 ---
 title: "(번역) Thinking in React Query"
 date: "2025-03-06"
-tags: ["React", "TanStack Query"]
-description: "React Query를 올바르게 이해하기 위한 핵심 개념들 — 비동기 상태 관리, staleTime, QueryKey 의존성 관리를 정리했습니다."
+tags: ["React", "react-query"]
+description: "React Summit 2023에서 React Query 메인테이너 Dominik(Tkdodo)이 발표한 'Thinking in React Query' 영상을 번역한 포스트입니다."
 ---
 
-## 1. React Query 소개 및 잘못된 인식
+> https://portal.gitnation.org/contents/thinking-in-react-query
 
-React Query는 데이터 불러오기 라이브러리가 아니다. QueryKey를 통해 데이터를 저장하고 Query Function으로 데이터를 가져온다. `useQuery` 훅에서 Promise를 반환하는 어떤 함수든 사용 가능하다.
+- **React Summit 2023**
+- React Query의 maintainer인 Dominik, aka Tkdodo가 React Query에 접근하는 마인드 셋을 세 가지의 심플한 방식으로 소개한 영상.
+- 모든 스크린샷과 코드는 실제 발표 자료에서 발췌했습니다.
+- 사내 스터디를 위해 만든 포스트 아카이빙 (23.12.18 작성)
+
+## **1. React Query 소개 및 잘못된 인식**
+
+- React Query는 data fetching library가 아니다.
+- React Query는 고유한 QueryKey를 가지고 데이터를 저장하며, Query Function을 실행해서 데이터를 받아온다. 이를 위해 컴포넌트 내에서 `useQuery` 훅을 써서 다양한 상태와 데이터를 랜더링하는데, 이 상황에서 React Query가 신경 쓰는건 fulfill됐거나 reject된 Promise의 리턴값뿐이다.
 
 ```jsx
 useQuery({
-  queryKey: ["issues"],
-  queryFn: () => axios.get("/issues").then((response) => response.data),
+	queryKey: ['issues'], // 데이터를 저장하는 곳
+	queryFn: () => axios.get('/issues').then((response) => response.data), // 데이터를 받아오는 곳
 });
+// queryFn은 Promise를 리턴하는 함수라면 뭐든지 가능!
+// **resolve the data** or **throw an error
+* https://tanstack.com/query/v4/docs/react/guides/query-functions**
+
+if(state === 'loading') return 'Loading...' // 상태에 따라 랜더링
+return ( <ul>{data.map(......)}</ul> // 데이터 랜더링
 ```
 
-Axios, GraphQL 등 어떤 데이터 페칭 라이브러리든 상관없다. **QueryFunction이 Promise만 반환하면 된다.**
+- Axios를 쓰든 GraphQL을 쓰든 데이터를 불러오는 라이브러리는 뭐든지 상관없다.
+- 그냥 **QueryFunction이 Promise만 리턴하면 된다**
 
----
+## **2. React Query: 데이터 불러오기, 그리고 상태 관리**
 
-## 2. React Query: 데이터 불러오기와 상태 관리
+- React Query는 **비동기적인 상태 관리 매니저**(Async State Manager)이다.
+  - cf) "It's Time to Break Up with Your Global State" - Tanner Lindsley, 2020 → React Query의 창시자인 Tanner의 강연. 추천!
 
-React Query는 **비동기 상태 관리 매니저**(Async State Manager)다. Client state와 Server state를 구분하여 관리해야 한다.
+- client state와 server state를 관리하는 방식의 구분이 필요하다.
+  - 보통 프론트에서는 모든 종류의 상태(state)를 같게 처리해왔다. 컴포넌트 내에 있다가, 필요하면 상위로 올려서 props으로 내리고, 더 커지면 상태관리 라이브러리 (redux나 zustand 등)을 사용하는 식으로. 이게 단순히 토글용 버튼이든, 네트워크 데이터 fetch와 관련된 이슈이든 동일했다. (client state와 server state를 관리하는 방식이 구분되지 못했던 것)
+- 상태는 이것이 어디서 사용되느냐가 아니라, 어떤 종류의 상태인지로 구분해야한다.
+  ![What kind of state?](https://velog.velcdn.com/images/kkoom/post/f15682ba-3248-44ca-99e1-85255499cf9e/image.png)
+  ![Server State(Async State)](https://velog.velcdn.com/images/kkoom/post/09830d73-eca0-4195-82c7-4da1188f03f7/image.png)
 
-기존 프론트엔드 개발에서는 모든 상태를 동일하게 처리했으나, "상태는 위치가 아닌 종류로 구분"되어야 한다.
+- 비동기적인 상태나 서버 상태의 경우, 우리는 데이터가 불러왔을 때의 상태(snapshot)만을 알 수 있다.
+- 클라이언트에서 서버 상태를 갖지 않기 때문에 이 데이터는 오래된 데이터일 수 있다. 클라이언트는 단순히 어떤 시점의 상태(snapshot)만을 빌려와서 해당 데이터를 노출할 뿐이다.
+- 상태는 동기적이지 않기 때문에, loading이나 error와 같은 상태 정보도 관리되어야 한다.
+- 기존의 상태 관리 툴들은 데이터를 업데이트된 상태로 유지하거나 비동기적인 상태의 Lifecyle을 관리할 수 없고, React Query는 이러한 상태관리를 가능하게 해준다.
 
-비동기 상태는 snapshot만 알 수 있고 항상 오래된 데이터일 가능성이 있다. Loading, error 같은 상태도 관리해야 한다.
+  ⇒ React Query는 **비동기적인 상태 관리 매니저**(Async State Manager)이다.
 
----
+## **3. 상태관리 방식과 '정제된' 구독('fine-grained' subscription)**
 
-## 3. 상태관리와 세분화된 구독
-
-Redux와 Zustand는 selector를 기반으로 한다. React Query도 유사하지만, `queryKey`에 정의된 상태만 구독한다.
+- Redux and Zustand → 'selector'를 베이스로 하는 상태 관리 라이브러리
+  - 컴포넌트에서 필요한 상태만을 구독(subscribe)해서 가져다가 쓸 수 있도록 한다.
+    - ex) `useSelector(state => state.xx)` `useStore(state => state.xx)`
+  - 만약 store의 다른 부분이 업데이트되더라도, 해당 부분을 구독하지 않는 컴포넌트라면 신경쓰지 않는다.
+  - 상태가 필요한 곳 어디에서든 hook을 통해 store에서 상태를 가져다 쓸 수 있다. (전역적으로 상태 사용)
+- React Query에서도 방식은 유사하다. 다만, 구독하는 상태가 QueryKey에 정의되어 있을 뿐이다.
 
 ```jsx
 function useIssues(select) {
-  return useQuery({
-    queryKey: ["issues"],
-    queryFn: () => axios.get("/issues").then((response) => response.data),
-    select,
-  });
+	return useQuery({
+		queryKey: ['issues'],
+		queryFn: () => axios.get('/issues').then((response) => response.data),
+		select, // 데이터를 정제하는 옵션
+	});
 }
+// * 'select' : QueryFuntion이 리턴하는 데이터를 정제해서 리턴시킬 수 있음.
+//            query cache에 저장되는 데이터에는 영향을 주지 않는다.
+// `select: (data: TData) => unknown` : 함수형태로 세팅한다
+*** https://tanstack.com/query/v4/docs/react/reference/useQuery**
 
 function useIssueCount() {
-  return useIssues((issues) => issues.length);
+	return useIssues((issues) => issues.length); // **React Query의 Selector 방식**
 }
+// 'issues'가 변하면 'useIssueCount' 훅이 리턴하는 length 데이터도 업데이트됨.
+// BUT!
+// useIssueCount() 훅은 데이터 리스트의 length와 관련되어 있기 때문에,
+// 만약 issue.isOpened 등의 다른 상태가 변경된 'issues' 데이터가 오더라도 length가 변하지 않았다면 useIssueCount 훅은 리랜더링되지 않는다!
 ```
 
-`select` 옵션으로 데이터를 정제할 수 있다. `length`가 변하지 않으면 리렌더링되지 않는다.
+- 이와 같은 React Query의 selector 방식을 사용할 수 있기 때문에, `useEffect` 훅이나 v5 버전에서는 deprecated된 `onSuccess` 와 같은 기능은 필요하지 않다. - React Query가 상태를 이미 관리하고 있기 때문에, 새로운 상태 관리 방식이 필요없다.
+  ![Things to avoid](https://velog.velcdn.com/images/kkoom/post/c6617a9d-c57c-475d-a1d3-7501ca55c777/image.png)
 
----
+## **4. React Query: Fetching, `staleTime`**
 
-## 4. React Query: Fetching과 staleTime
+- OK, 그럼 필요한 컴포넌트에서 모두 `useQuery` 콜함. 그런데 네트워크 요청이 단시간에 왜이렇게 많이 일어나지…?
 
-데이터 refetch가 일어나는 상황:
+  → refetch 관련 옵션과 retry를 모두 꺼봅니다… ok…. 하지만 이렇게 fetch되는 이유가 있지 않을까?
 
-- 윈도우 포커스 진입
-- 컴포넌트 마운트
-- 네트워크 재연결
-- QueryKey 변경
+- 비동기적인 상태는 오래된 데이터일 수 있기 때문에 업데이트를 계속 해줘야한다.
+- React Query에서는 아래와 같은 상황에 데이터를 다시 불러온다(refetch).
+  - 현재 윈도우에 focus가 들어갔을 때**(window focus)**
+  - 컴포넌트가 mount 되었을 때**(component mount)**
+  - 네트워크가 다시 연결되었을 때**(regain network)**
+  - QueryKey가 변경되었을 때**(QueryKey change)**
+- 하지만 모든 상황, 모든 쿼리에서 refetch를 진행하는 것은 아니다.
+  **→ query가 stale 하다고 여겨졌을 때 ONLY!**
+- `staleTime` → 데이터가 stale하게 되기까지의 시간 (stale = no longer fresh = 오래된, 낡은)
+- `staleTime` 디폴트는 0이다
+  - React Query는 최소한의 네트워크 요청만하다가 문제가 생기느니 차라리 모든 것을 업데이트 시키느라 문제가 생기는 쪽을 택했다. (그래서 디폴트가 0초, 데이터는 바로 낡은(stale)것으로 간주되고, 데이터를 다시 불러오려고 한다)
 
-**하지만 query가 stale할 때만 refetch된다.**
+## **5. Stale Time 그리고 의존성 관리(Dependencies)**
 
-`staleTime` = 데이터가 stale하게 되기까지의 시간
-기본값은 0이다 (모든 데이터는 즉시 오래된 것으로 간주).
+- 어쨌든 `staleTime`은 정하기 나름이다. 정답은 없음!
+  ![Define staleTime](https://velog.velcdn.com/images/kkoom/post/add6fed6-b427-4eb2-bf34-9101d1d6ce81/image.png)
+  - 서버가 재시작될 때만 데이터가 변경된다고 본다면 `staleTime: infinity`
+  - 하지만 많은 유저들이 동시다발적으로 업데이트 하는 협동 툴 등에는 `staleTime: 0` 이 필요할 것.
+  - 우선 글로벌하게 `staleTime`을 설정해두고, 필요하다면 쿼리마다 재설정하도록 세팅.
+- React Query가 데이터를 다시 불러오는 상황 (위의 항목 참고) 중에서 가장 중요한 건 **QueryKey가 바뀔 때** 이다.
+- QueryFunction과 QueryKey를 사용할 때, 파라미터를 의존성으로 봐야한다. (**parameters as dependencies)**
+  ![Parameters are Dependencies](https://velog.velcdn.com/images/kkoom/post/684829b2-63f6-4740-a635-2a042efca8ae/image.png)
+  - ex) 필터와 같은 파라미터를 쓰는 query function이 있다면 해당 파라미터를 queryKey에 넣어야한다.
+  - 다른 종류의 파라미터가 들어간 상황이라면, QueryKey는 개별적으로 세팅되고, 개별적으로 캐싱된다.
+    - `queryKey: ['get-issue-list', page]`
+      - page가 1일때와, 2일때는 다른 queryKey로 간주되고, 개별적으로 캐싱됨.
+      - page가 바뀌면 자동으로 데이터를 다시 불러옴(refetch)
+- 그래서 React Query 팀은 자체적인 ESLint 플러그인을 배포했고, 이 플러그인이 queryFunction 안에서 쓰는 무언가가 있다면 그걸 key에 넣으라고 알려줌.
+  → autoFixing이 가능해서 사용을 권장함
+  ![Using queryKey](https://velog.velcdn.com/images/kkoom/post/12c41d85-2dfe-48fd-8292-9591a5076bde/image.png)
+- QueryKey를 `useEffect` 의 의존성 배열과 같다고 생각할 수 있다. 하지만 데이터 참조의 지속을 위해 `useMemo` 나 `useCallback` 를 쓸 필요가 없는 형태.
 
----
+  → React Query가 알아서 데이터의 상태를 캐싱하고 관리하기 때문이다.
 
-## 5. Stale Time과 의존성 관리
+  ```jsx
+  useEffect(() => {
+  	...
+  	}, [ 의존성 배열(dependency array) ] // 의존성 배열 내의 요소가 변경되면 useEffect 훅이 동작한다.
+  )}
 
-`staleTime`은 데이터 특성에 따라 설정한다:
+  // QueryKey 역시 QueryKey 내의 파라미터 요소가 변경되면 데이터 갱신을 위해 QueryFn을 호출하지만, 데이터의 상태에 따라 알아서 캐싱하거나 데이터를 다시 불러오도록 조율함.
+  // * query의 staleTime에 따라 데이터가 낡았는지 여부를 판단
+  ```
 
-- 서버 재시작 시에만 변경 → `staleTime: Infinity`
-- 동시 협업 도구 → `staleTime: 0`
+### **6. Zustand 등의 다른 상태 관리 툴과의 연계**
 
-**가장 중요한 것: QueryKey 변경 시**
+- 만약 같은 filters를 파라미터로 받는 쿼리를 쓰는 각각 다른 컴포넌트가 있는데, 한 컴포넌트에서만 filters에 접근할 수 있다면 다른 곳에서는 어떻게 되나?
+  ![Using global filters](https://velog.velcdn.com/images/kkoom/post/03b9c80d-84c8-4919-9272-cb96572ae1d9/image.png)
+  → React Query 자체는 이런 상황을 신경쓰고 관리하지 않음. filters라는 요소는 client state 이기때문에 따로 관리되어야 한다.
+  → 이러한 상황에서는 전역으로 filters를 store에 넣고 사용하는 것을 생각해 볼 수 있다 (Redux, Zustand 등의 상태 관리 툴 사용)
 
-파라미터를 의존성으로 취급해야 한다:
+  ```jsx
+  function useIssues() {
+  	**const filters = useStore((state) => state.filters);**
 
-```jsx
-queryKey: ["get-issue-list", page];
-// page가 1과 2일 때 다른 QueryKey로 간주되고 개별 캐싱됨
-```
+  	return useQuery({
+  		queryKey: ['issues', filters],
+  		queryFn: () => {
+  			const url = `/issues?filters=${filters}`;
+  			return axios.get(url).then((response) => response.data);
+  		},
+  	});
+  }
 
-React Query 팀의 ESLint 플러그인을 사용하여 의존성을 자동으로 검사할 수 있다.
-
----
-
-## 6. 다른 상태관리 도구와의 연계
-
-`filters` 같은 client state는 Redux나 Zustand로 관리:
-
-```jsx
-function useIssues() {
-  const filters = useStore((state) => state.filters);
-
-  return useQuery({
-    queryKey: ["issues", filters],
-    queryFn: () => {
-      const url = `/issues?filters=${filters}`;
-      return axios.get(url).then((response) => response.data);
-    },
-  });
-}
-```
-
-`filters`는 client state이므로 별도 관리. Server state는 `useQuery`로 관리.
-
----
+  // **filters는 client state 이므로 별도로 store 해두고 사용하면, filters 가 바뀔 때마다 query가 자동으로 돌거나 캐시에서 최근 데이터를 읽어올 것.**
+  // (server state는 useQuery를 통해 관리되는 것)
+  ```
 
 ## 세 줄 요약
 
-1. React Query는 **비동기 상태관리 매니저**이다
-2. **staleTime**을 필요에 따라 설정해야 한다
-3. **파라미터를 의존성으로 다루고** ESLint 도구를 활용하자
+1. React Query는 데이터를 불러오는 라이브러리(data fetching library)가 아니다!
+   **비동기 상태관리 매니저**(Async state manger) 이다.
+2. **`staleTime`** 은 참 좋은 친구에용. 필요에 따라서 세팅해서 써야한다.
+3. **파라미터를 의존성으로 생각하고 다루자**.
+   그리고 React Query의 ESLint 툴을 사용하여 이를 체크하자.
+
+### 기존 velog 링크
+
+[(번역) Thinking in React Query](https://velog.io/@kkoom/%EB%B2%88%EC%97%AD-Thinking-in-React-Query)
